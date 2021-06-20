@@ -20,6 +20,7 @@ output.xml
 dump.rdb
 .cache/
 .venv/
+venv/
 .eggs
 AUTHORS
 ChangeLog
