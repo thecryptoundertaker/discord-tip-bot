@@ -1,4 +1,10 @@
 from web3 import Web3
+from eth_account import Account
+from secrets import randbits
+
+###
+# Node utils
+###
 
 def connect_to_fantom(provider_address, provider_type="wss", timeout=60):
     try:
@@ -12,4 +18,14 @@ def connect_to_fantom(provider_address, provider_type="wss", timeout=60):
             return None
     except:
         raise Exception
+
+###
+# Wallet Utils
+###
+
+def create_wallet():
+    try:
+        return Account.create(randbits(4096))
+    except:
+        raise
 
