@@ -23,9 +23,21 @@ def connect_to_fantom(provider_address, provider_type="wss", timeout=60):
 # Wallet Utils
 ###
 
-def create_wallet():
+def create_account():
     try:
         return Account.create(randbits(4096))
+    except:
+        raise
+
+def get_account_from_key(private_key):
+    try:
+        return Account.from_key(private_key)
+    except:
+        raise
+
+def get_balance_for_address(web3, address):
+    try:
+        return web3.eth.get_balance(address)
     except:
         raise
 
