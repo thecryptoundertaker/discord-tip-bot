@@ -1,11 +1,22 @@
 from frozendict import frozendict
+import json
+
+# utils
+
+def get_token_abi(token):
+    try:
+        with open("tokens/abi/%s.json" % token['symbol'].lower()) as f:
+            abi = json.load(f)
+        return abi
+    except:
+        raise
 
 # supported tokens
 
 ftm = frozendict({
     "contract_address": "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83",
     "type": "ERC20",
-    "symbol": "WFTM",
+    "symbol": "FTM",
     "name": "Wrapped Fantom"
     })
 
