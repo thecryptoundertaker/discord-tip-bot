@@ -1,40 +1,26 @@
 # Dev Setup
 
-First clone the repo, then create a python virtual environment:
+First intall pipenv
 
 ```
-python -m venv venv
+pip3 install pipenv
 ```
 
-Enter the python virtual environment:
+Second clone the repo and install dependencies:
 
-Bash:
 ```
-source venv/bin/activate
-```
-Fish:
-```
-source venv/bin/activate.fish
-```
-CSH:
-```
-source venv/bin/activate.csh
+pipenv install
 ```
 
-Upgrade the python package manager pip and install the wheel package for binary packages:
-```
-pip install pip --upgrade
-pip install wheel
-```
+Next, activate the virtual environment:
 
-Install the required 3rd party dependencies:
 ```
-pip install -r requirements.txt
+pipenv shell
 ```
 
 Run the main app:
 ```
-python tippy.py
+python main.py
 ```
 
 
