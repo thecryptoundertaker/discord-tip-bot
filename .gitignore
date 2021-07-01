@@ -21,6 +21,7 @@ dump.rdb
 .cache/
 .venv/
 venv/
+secrets.env
 .eggs
 AUTHORS
 ChangeLog
