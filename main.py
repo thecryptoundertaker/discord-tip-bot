@@ -23,12 +23,7 @@ async def ping(ctx: commands.Context):
     """Check if bot is online."""
     await ctx.send("pong")
 
-# ebot.command()
-# async def help(ctx):
-    # await ctx.send("<Help message here>")
-
 @bot.command()
-# async def deposit(ctx, amount: float, coin: str, address: str):
 async def deposit(ctx, coin: str):
     """Deposit coins to your discord account.
 
@@ -53,7 +48,6 @@ async def deposit_error(ctx, error):
         await ctx.send("[Other] A deposit error occurred.")
 
 @bot.command()
-# async def withdraw(ctx, amount: float, coin: str, address: str):
 async def withdraw(ctx, coin: str):
     """Send coins to an address.
 
