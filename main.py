@@ -11,11 +11,10 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 def main():
-    breakpoint()
     config = get_config()
     fantom = connect_to_fantom(config["PROVIDER_ADDRESS"])
     bot = get_discord_bot()
-    bot.run(config["TOKEN"])
+    bot.run(config["DISCORD_TOKEN"])
     return 
 
 if __name__ == "__main__":
