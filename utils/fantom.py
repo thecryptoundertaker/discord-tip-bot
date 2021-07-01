@@ -13,6 +13,11 @@ def connect_to_fantom(provider_address, provider_type="wss", timeout=60):
         else:
             raise Exception
         if w3.isConnected():
+            # XXX add these to log file
+            print(f"* Connected to Fantom!")
+            print(f"* Node Address: {provider_address}")
+            print(f"* Provider Type: {provider_type}")
+            print(f"* Current Block: {w3.eth.block_number}")
             return w3
         else:
             return None
