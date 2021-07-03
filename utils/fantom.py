@@ -4,6 +4,7 @@ from secrets import randbits
 import discord
 from database.database import get_account_from_db, insert_account, create_connection
 from config import config
+from tokens.tokens import tokens, get_token_abi
 
 ###
 # Node utils
@@ -43,24 +44,34 @@ def get_account_from_key(private_key):
     except:
         raise
 
-def get_balance_for_address(web3, address):
+def get_balance_for_address(address, token):
     try:
-        return web3.eth.get_balance(address)
+        w3 = connect_to_fantom(config["PROVIDER_ADDRESS"])
+        if token.upper() == "FTM":
+            balance = w3.eth.getBalance(address)
+            return w3.fromWei(balance, "ether")
+        token_abi = get_token_abi(tokens[token])
+        print(type(token_abi))
+        token_contract = w3.eth.contract(address=tokens[token]["contract_address"], abi=token_abi)
+        balance = token_contract.functions.balanceOf(address).call()
+        return balance
     except:
         raise
 
 def get_address(user: discord.Member):
     """Get user's address from the db or create one if it does not exist"""
     conn = create_connection(config["DATABASE_NAME"])
-    if isinstance(user, discord.Member):
-        id_ = user.id
-    else:
-        id_ = user
-    account = get_account_from_db(conn, id_)
+    account = get_account_from_db(conn, user.id)
 
     #if user not in db
     if account == None:
-        account = _create_account()
-        insert_account(conn, (id_, account.key.hex()))
+        account = create_account()
+        insert_account(conn, (user.id, account.key.hex()))
 
     return account.address
+
+def get_balance(user: discord.Member, token: str):
+    """Get the balance of a specific token from a specific user"""
+    conn = create_connection(config["DATABASE_NAME"])
+    address = get_address(user)
+    return get_balance_for_address(address, token)
