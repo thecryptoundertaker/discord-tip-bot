@@ -1,6 +1,7 @@
-from config import get_config
+from config import config
 from utils.fantom import connect_to_fantom
-from bot.discord import get_discord_bot
+from bot.discord import run_discord_bot
+from database.database import init_db
 
 import logging
 
@@ -11,10 +12,11 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 def main():
-    config = get_config()
     fantom = connect_to_fantom(config["PROVIDER_ADDRESS"])
-    bot = get_discord_bot()
-    bot.run(config["DISCORD_TOKEN"])
+    conn = init_db(config["DATABASE_NAME"])
+    # bot = get_discord_bot()
+    run_discord_bot(config["DISCORD_TOKEN"])
+    # bot.run(config["DISCORD_TOKEN"])
     return 
 
 if __name__ == "__main__":

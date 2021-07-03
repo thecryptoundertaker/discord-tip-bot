@@ -10,3 +10,5 @@ def get_config(debug=False):
         }
     except:
         raise
+
+config = get_config()

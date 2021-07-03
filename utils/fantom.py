@@ -1,6 +1,9 @@
 from web3 import Web3
 from eth_account import Account
 from secrets import randbits
+import discord
+from database.database import get_account_from_db, insert_account, create_connection
+from config import config
 
 ###
 # Node utils
@@ -46,3 +49,18 @@ def get_balance_for_address(web3, address):
     except:
         raise
 
+def get_address(user: discord.Member):
+    """Get user's address from the db or create one if it does not exist"""
+    conn = create_connection(config["DATABASE_NAME"])
+    if isinstance(user, discord.Member):
+        id_ = user.id
+    else:
+        id_ = user
+    account = get_account_from_db(conn, id_)
+
+    #if user not in db
+    if account == None:
+        account = _create_account()
+        insert_account(conn, (id_, account.key.hex()))
+
+    return account.address

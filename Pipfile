@@ -44,6 +44,7 @@ web3 = "==5.20.0"
 websockets = "==8.1"
 yarl = "==1.6.3"
 "discord.py" = "==1.7.3"
+python-dotenv = "*"
 
 [dev-packages]
 
