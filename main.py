@@ -17,9 +17,7 @@ def main():
     fantom = connect_to_fantom(config["PROVIDER_ADDRESS"])
     conn = init_db(config["DATABASE_NAME"])
 
-    addr = "0x248E0006472F08D5b06d3D252085B3cB7a595fB0"
     run_discord_bot(config["DISCORD_TOKEN"])
-    bot.run(config["DISCORD_TOKEN"])
     return 
 
 if __name__ == "__main__":
