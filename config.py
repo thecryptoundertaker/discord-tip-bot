@@ -8,8 +8,10 @@ def get_config(debug=False):
         **dotenv_values("secrets.env"),  # load sensitive variables
         **os.environ  # override loaded values with environment variables
         }
+
         assert(config_dict['DISCORD_TOKEN'])
         assert(config_dict['SECRET_KEY'])
+
         return config_dict
     except:
         raise
