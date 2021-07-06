@@ -2,7 +2,6 @@ from web3 import Web3
 from eth_account import Account
 from secrets import randbits
 import discord
-from database.database import get_account_from_db, insert_account, create_connection
 from config import config
 from tokens.tokens import tokens, get_token_abi
 

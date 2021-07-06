@@ -1,7 +1,7 @@
 import discord
 from web3 import Web3
 from discord.ext import commands
-from utils.fantom import connect_to_fantom, get_address, get_balance, withdraw_to_address
+from utils.fantom import connect_to_fantom, get_address, get_balance_for_address, withdraw_to_address
 from tokens.tokens import tokens
 from decimal import Decimal
 

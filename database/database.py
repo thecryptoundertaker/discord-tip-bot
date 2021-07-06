@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 
 from eth_account import Account
 
-def create_connection(db_file):
+def get_db_connection(db_file):
     """
     Create a database connection to the SQLite database specified by db_file
     :param db_file: database file
@@ -17,19 +17,22 @@ def create_connection(db_file):
     except:
         raise
 
-def init_db(db_file):
-    #TODO: Find a way to securely store private keys
-    conn = create_connection(db_file)
-    cur = conn.cursor()
+def init_db(conn):
     try:
+        cur = conn.cursor()
         cur.execute('''CREATE TABLE IF NOT EXISTS accounts (
                     user_id INTEGER PRIMARY KEY,
                     key TEXT NOT NULL UNIQUE
                     )''')
         conn.commit()
+        return cur
     except:
         raise
 
+def get_db(db_file):
+
+    conn = get_db_connection(db_file)
+    curr = init_db(conn)
     return conn
 
 def insert_account(conn, new_entry):
