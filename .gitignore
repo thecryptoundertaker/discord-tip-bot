@@ -27,3 +27,4 @@ AUTHORS
 ChangeLog
 config.yml
 *.db
+local/
