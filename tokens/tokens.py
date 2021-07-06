@@ -27,8 +27,6 @@ fusd = frozendict({
     "name": "Fantom USD"
     })
 
-
-
 tbond = frozendict({
     "contract_address": "0x24248CD1747348bDC971a5395f4b3cd7feE94ea0",
     "type": "ERC20",
@@ -49,3 +47,11 @@ tshare = frozendict({
     "symbol": "TSHARE",
     "name": "Tomb Share"
     })
+
+tokens = {
+        "ftm": ftm,
+        "fusd": fusd,
+        "tbond": tbond,
+        "tomb": tomb,
+        "tshare": tshare
+        }
