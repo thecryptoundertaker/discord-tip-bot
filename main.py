@@ -12,8 +12,9 @@ logger.addHandler(handler)
 
 def main():
     config = get_config()
+    logging.info('Tip Bot Started')
     fantom = connect_to_fantom(config["PROVIDER_ADDRESS"])
-    bot = get_discord_bot()
+    bot = get_discord_bot(config)
     bot.run(config["DISCORD_TOKEN"])
     return 
 

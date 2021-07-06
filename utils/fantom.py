@@ -2,6 +2,9 @@ from web3 import Web3
 from eth_account import Account
 from secrets import randbits
 
+import logging
+logger = logging.getLogger(__name__)
+
 ###
 # Node utils
 ###

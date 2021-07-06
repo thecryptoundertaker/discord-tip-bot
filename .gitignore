@@ -26,4 +26,4 @@ secrets.env
 AUTHORS
 ChangeLog
 config.yml
-
+*.db
