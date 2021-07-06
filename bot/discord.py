@@ -1,7 +1,9 @@
 import discord
+from web3 import Web3
 from discord.ext import commands
-from utils.fantom import connect_to_fantom, get_address, get_balance
+from utils.fantom import connect_to_fantom, get_address, get_balance, withdraw_to_address
 from tokens.tokens import tokens
+from decimal import Decimal
 
 def run_discord_bot(discord_token):
     command_prefix = "$"
@@ -19,7 +21,8 @@ def run_discord_bot(discord_token):
 
         e.g. $deposit FTM
         """
-        if token.lower() not in tokens:
+        token = token.lower()
+        if token not in tokens:
             #TODO: handle invalid token error
             return
         #TODO: Check if token is valid
@@ -43,10 +46,10 @@ def run_discord_bot(discord_token):
 
         e.g. $withdraw FTM
         """
-        if token.lower() not in tokens:
+        token = token.lower()
+        if token not in tokens:
             #TODO: handle invalid token error
             return
-        #TODO: Implement withdraw function
 
         def is_valid(msg):
             return msg.channel == ctx.channel and msg.author == ctx.author
@@ -54,24 +57,24 @@ def run_discord_bot(discord_token):
         await ctx.send(f"Enter your {token} destination address.")
         address = await bot.wait_for("message", check=is_valid)
 
-        #TODO: Check if adress is valid
-        if address.content == "invalid":
+        if not Web3.isAddress(address.content):
             await ctx.send("You provided an invalid address.")
         else:
-            balance = 100 #TODO: Get user's balance (same function used in $balance command)
+            balance = get_balance(ctx.author, token)
             await ctx.send(f"How much do you want to withdraw?\nYou currently have {balance} {token}")
             amount = await bot.wait_for("message", check=is_valid)
-            _amount = float(amount.content)
+            _amount = Decimal(amount.content)
             if 0 < _amount <= balance:
                 #TODO: Ok prompt to avoid withdrawals mistakes by users
-                #TODO: Implement withdraw(user, token, balance, address) function
-                await ctx.send(f"Withdrawing {_amount} {token} to {address.content}")
+                txn_hash = withdraw_to_address(ctx.author, token, _amount, address.content)
+                await ctx.send(f"Withdrawing {_amount} {token} to {address.content}.\nTxn Hash: {txn_hash}")
             else:
                 await ctx.send(f"You can't withdraw {_amount} {token}.\nYou currently have {balance} {token}")
 
     @withdraw.error
     async def withdraw_error(ctx, error):
         #TODO: Implement withdraw error handler
+        print(error)
         await ctx.send("A withdrawal error occurred.")
 
     @bot.command()
@@ -80,10 +83,10 @@ def run_discord_bot(discord_token):
 
         e.g. $balance FTM
         """
-        if token.lower() not in tokens:
+        token = token.lower()
+        if token not in tokens:
             #TODO: handle invalid token error
             return
-        # amount = 100 #TODO: Implement get_balance(user, token)
         amount = get_balance(ctx.author, token)
         await ctx.send(f"You have {amount} {token}.")
 
@@ -94,16 +97,17 @@ def run_discord_bot(discord_token):
         await ctx.send("A balance error occurred.")
 
     @bot.command()
-    async def tip(ctx, user: discord.Member, amount: float, token: str):
+    async def tip(ctx, user: discord.Member, amount: Decimal, token: str):
         """Send tokens to another user.
 
         e.g. $tip @user 5 FTM
         """
-        if token.lower() not in tokens:
+        token = token.lower()
+        if token not in tokens:
             #TODO: handle invalid token error
             return
 
-        balance = 100 #TODO: get_balance function from above
+        balance = get_balance(ctx.author, token)
         if amount > balance:
             await ctx.send(f"Insufficient balance.")
         #TODO: Implement _tip(sender, receiver, token, amount) function
