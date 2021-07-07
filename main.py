@@ -14,9 +14,9 @@ logger.addHandler(handler)
 
 def main():
     config = get_config()
-    db = get_db(config['DATABASE_FILE'])
-    fantom = connect_to_fantom(config["PROVIDER_ADDRESS"])
-    bot = run_discord_bot(config['DISCORD_TOKEN'])
+    conn = get_db(config['DATABASE_FILE'])
+    w3 = connect_to_fantom(config["PROVIDER_ADDRESS"])
+    bot = run_discord_bot(config["DISCORD_TOKEN"], conn, w3)
 
 if __name__ == "__main__":
     main()
