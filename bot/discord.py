@@ -1,8 +1,8 @@
 import discord
 from web3 import Web3
 from discord.ext import commands
-from utils.fantom import (connect_to_fantom, get_address,
-        get_user_balance, withdraw_to_address, tip_user)
+from utils.users import (get_address, get_user_balance, withdraw_to_address,
+        tip_user)
 from tokens.tokens import tokens
 from decimal import Decimal
 
@@ -18,7 +18,8 @@ def run_discord_bot(discord_token, conn, w3):
 
     @bot.command()
     async def deposit(ctx, token: str):
-        """Deposit tokens to your discord account.
+        """
+        Deposit tokens to your discord account.
 
         e.g. $deposit FTM
         """
@@ -42,7 +43,8 @@ def run_discord_bot(discord_token, conn, w3):
 
     @bot.command()
     async def withdraw(ctx, token: str):
-        """Send tokens to an address.
+        """
+        Withdraw tokens to an address.
 
         e.g. $withdraw FTM
         """
@@ -54,7 +56,7 @@ def run_discord_bot(discord_token, conn, w3):
         def is_valid(msg):
             return msg.channel == ctx.channel and msg.author == ctx.author
 
-        await ctx.send(f"Enter your {token} destination address.")
+        await ctx.send(f"Enter your {token.upper()} destination address.")
         address = await bot.wait_for("message", check=is_valid)
 
         if not Web3.isAddress(address.content):
@@ -66,10 +68,16 @@ def run_discord_bot(discord_token, conn, w3):
             _amount = Decimal(amount.content)
             if 0 < _amount <= balance:
                 #TODO: Ok prompt to avoid withdrawals mistakes by users
-                txn_hash = withdraw_to_address(conn, w3, ctx.author, token, _amount, address.content)
-                await ctx.send(f"Withdrawing {_amount} {token} to {address.content}.\nTxn Hash: {txn_hash}")
+                await ctx.send(f"You want to withdraw {_amount} {token.upper()} to {address.content}?\nReply with yes to confirm")
+                confirmation = await bot.wait_for("message", check=is_valid)
+                if confirmation.content.lower() == "yes":
+                    txn_hash = withdraw_to_address(conn, w3, ctx.author, token, _amount, address.content)
+                    await ctx.send(f"Withdrawing {_amount} {token.upper()} to {address.content}.\nTxn Hash: {txn_hash}")
+                else:
+                    #TODO cancel succesful message
+                    pass
             else:
-                await ctx.send(f"You can't withdraw {_amount} {token}.\nYou currently have {balance} {token}")
+                await ctx.send(f"You can't withdraw {_amount} {token.upper()}.\nYou currently have {balance} {token.upper()}")
 
     @withdraw.error
     async def withdraw_error(ctx, error):
@@ -110,7 +118,6 @@ def run_discord_bot(discord_token, conn, w3):
         balance = get_user_balance(conn, w3, ctx.author, token)
         if amount > balance:
             await ctx.send(f"Insufficient balance.")
-        #TODO: Implement _tip(sender, receiver, token, amount) function
         txn_hash = tip_user(conn, w3, ctx.author, receiver, amount, token)
         await ctx.send(f"You sent {amount} {token} to {receiver}.\nTxn Hash: {txn_hash}")
 

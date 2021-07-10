@@ -1,7 +1,7 @@
 import logging
 from config import get_config
 from database.database import get_db
-from utils.fantom import connect_to_fantom, get_balance_for_address
+from utils.fantom import connect_to_fantom
 
 from bot.discord import run_discord_bot
 

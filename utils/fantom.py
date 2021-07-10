@@ -1,8 +1,6 @@
 from web3 import Web3
 from eth_account import Account
 from secrets import randbits
-import discord
-from database.database import get_account_from_db, insert_account
 from tokens.tokens import tokens, get_token_abi
 
 import logging
@@ -40,20 +38,22 @@ def create_account():
     except:
         raise
 
+def _sign_transaction(txn, key):
+    # XXX create key handling functions
+    try:
+        signed_txn = Account.sign_transaction(txn, key)
+        return signed_txn
+    except:
+        raise
 
-# XXX should this be moved to database or discord or a new users module?
-def _get_account(conn, user):
-    """Get user's account from the db or create one if it does not exist"""
-    account = get_account_from_db(conn, user.id)
+def _send_raw_transaction(w3, signed_txn):
+    try:
+        txn_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+        return txn_hash
+    except:
+        raise
 
-    #if user not in db
-    if account == None:
-        account = create_account()
-        insert_account(conn, (user.id, account.key.hex()))
-
-    return account
-
-def _send_tokens(w3, src_account, token, amount, dst_address):
+def send_tokens(w3, src_account, token, amount, dst_address):
     """Send <amount> <token> from <src_account> to <dst_address>"""
     try:
         nonce = w3.eth.getTransactionCount(src_account.address)
@@ -78,15 +78,13 @@ def _send_tokens(w3, src_account, token, amount, dst_address):
                                 "gasPrice": w3.toWei(60, "gwei"),
                                 "nonce": nonce
                             })
-            # XXX wrap signing transaction in a function, create key handling functions
-            signed_txn = Account.sign_transaction(txn, src_account.key)
-        # XXX wrap send_raw_transaction to trap exceptions
-        txn_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+            signed_txn = _sign_transaction(txn, src_account.key)
+        txn_hash = _send_raw_transaction(w3, signed_txn)
         return txn_hash.hex()
     except:
         raise
 
-def get_balance_for_address(w3, address, token):
+def get_address_balance(w3, address, token):
     try:
         if token.upper() == "FTM":
             balance = w3.eth.getBalance(address)
@@ -97,24 +95,3 @@ def get_balance_for_address(w3, address, token):
         return w3.fromWei(balance, "ether")
     except:
         raise
-
-def get_address(conn, user):
-    """Get user's address from the db or create one if it does not exist"""
-    account = _get_account(conn, user)
-    return account.address
-
-def get_user_balance(conn, w3, user, token):
-    """Get the balance of a specific token for the given account"""
-    address = get_address(conn, user)
-    return get_balance_for_address(w3, address, token)
-
-def withdraw_to_address(conn, w3, user, token, amount, dst_address):
-    """Withdraw <amount> <token> to <address>"""
-    src_account = _get_account(conn, user)
-    return  _send_tokens(w3, src_account, token, amount, dst_address)
-
-def tip_user(conn, w3, sender, receiver, amount, token):
-    """Send <amount> <token> from <sender> to <receiver>"""
-    src_account = _get_account(conn, sender)
-    dst_address = get_address(conn, receiver)
-    return _send_tokens(w3, src_account, token, amount, dst_address)
