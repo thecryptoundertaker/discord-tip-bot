@@ -4,6 +4,8 @@ from discord.ext import commands
 from utils.users import (get_address, get_user_balance, withdraw_to_address,
         tip_user)
 from tokens.tokens import tokens
+from bot import errors
+from bot import embeds
 from decimal import Decimal
 
 def run_discord_bot(discord_token, conn, w3):
@@ -11,44 +13,44 @@ def run_discord_bot(discord_token, conn, w3):
     description = "A Python Discord bot."
     bot = commands.Bot(command_prefix=command_prefix, description=description)
 
+    def to_lower(arg):
+        return arg.lower()
+
     @bot.command()
-    async def ping(ctx: commands.Context):
+    async def ping(ctx):
         """Check if bot is online."""
         await ctx.send("pong")
 
+    @bot.command(name="tokens")
+    async def _tokens(ctx):
+        """Check the list of supported tokens"""
+        await ctx.send(embed=embeds.list_tokens(tokens))
+
     @bot.command()
-    async def deposit(ctx, token: str):
+    async def deposit(ctx, *, token: to_lower):
         """
         Deposit tokens to your discord account.
 
         e.g. $deposit FTM
         """
-        token = token.lower()
         if token not in tokens:
-            #TODO: handle invalid token error
+            await ctx.send(embed=errors.handle_invalid_token())
             return
 
         address = get_address(conn, ctx.author)
-        await ctx.send(f"Deposit {token.upper()} to this address => {address}")
-
+        await ctx.send(embed=embeds.deposit_address(token, address))
 
     @deposit.error
     async def deposit_error(ctx, error):
-        #TODO: Implement deposit error handler
-        if isinstance(error, commands.BadArgument):
-            await ctx.send("[BadArgument] A deposit error occurred.")
-        else:
-            print(error)
-            await ctx.send("[Other] A deposit error occurred.")
+        await ctx.send(embed=errors.handle_deposit(error))
 
     @bot.command()
-    async def withdraw(ctx, token: str):
+    async def withdraw(ctx, token: to_lower):
         """
         Withdraw tokens to an address.
 
         e.g. $withdraw FTM
         """
-        token = token.lower()
         if token not in tokens:
             #TODO: handle invalid token error
             return
@@ -82,16 +84,15 @@ def run_discord_bot(discord_token, conn, w3):
     @withdraw.error
     async def withdraw_error(ctx, error):
         #TODO: Implement withdraw error handler
-        print(error)
-        await ctx.send("A withdrawal error occurred.")
+        print(error, type(error))
+        await ctx.send(f"Error: {error}")
 
     @bot.command()
-    async def balance(ctx, token: str):
+    async def balance(ctx, token: to_lower):
         """Check your token's balance.
 
         e.g. $balance FTM
         """
-        token = token.lower()
         if token not in tokens:
             #TODO: handle invalid token error
             return
@@ -101,16 +102,15 @@ def run_discord_bot(discord_token, conn, w3):
     @balance.error
     async def balance_error(ctx, error):
         #TODO: Implement balance error handler
-        print(error)
-        await ctx.send("A balance error occurred.")
+        print(error, type(error))
+        await ctx.send(f"Error: {error}")
 
     @bot.command()
-    async def tip(ctx, receiver: discord.Member, amount: Decimal, token: str):
+    async def tip(ctx, receiver: discord.Member, amount: Decimal, token: to_lower):
         """Send tokens to another user.
 
         e.g. $tip @user 5 FTM
         """
-        token = token.lower()
         if token not in tokens:
             #TODO: handle invalid token error
             return
@@ -124,8 +124,8 @@ def run_discord_bot(discord_token, conn, w3):
     @tip.error
     async def tip_error(ctx, error):
         #TODO: Implement tip error handler
-        print(error)
-        await ctx.send("A tip error occurred.")
+        print(error, type(error))
+        await ctx.send(f"Error: {error}")
 
 
     @bot.listen

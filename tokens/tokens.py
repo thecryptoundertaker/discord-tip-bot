@@ -14,10 +14,8 @@ def get_token_abi(token):
 # supported tokens
 
 ftm = frozendict({
-    "contract_address": "0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83",
-    "type": "ERC20",
     "symbol": "FTM",
-    "name": "Wrapped Fantom"
+    "name": "Fantom"
     })
 
 fusd = frozendict({
