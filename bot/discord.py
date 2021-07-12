@@ -8,6 +8,7 @@ from bot import errors
 from bot import embeds
 from decimal import Decimal
 
+#TODO add logging in all error functions
 def run_discord_bot(discord_token, conn, w3):
     command_prefix = "$"
     description = "A Python Discord bot."
@@ -42,90 +43,109 @@ def run_discord_bot(discord_token, conn, w3):
 
     @deposit.error
     async def deposit_error(ctx, error):
+        print(error, type(error))
         await ctx.send(embed=errors.handle_deposit(error))
 
     @bot.command()
-    async def withdraw(ctx, token: to_lower):
+    async def withdraw(ctx, *, token: to_lower):
         """
         Withdraw tokens to an address.
 
         e.g. $withdraw FTM
         """
         if token not in tokens:
-            #TODO: handle invalid token error
+            await ctx.send(embed=errors.handle_invalid_token())
+            return
+
+        balance = get_user_balance(conn, w3, ctx.author, token)
+        if balance == 0:
+            await ctx.send(embed=errors.handle_no_funds(token))
             return
 
         def is_valid(msg):
             return msg.channel == ctx.channel and msg.author == ctx.author
 
-        await ctx.send(f"Enter your {token.upper()} destination address.")
+        await ctx.send(embed=embeds.dst_address_prompt(token))
         address = await bot.wait_for("message", check=is_valid)
+        address = address.content
 
-        if not Web3.isAddress(address.content):
-            await ctx.send("You provided an invalid address.")
+        if address == "cancel":
+            await ctx.send(embed=embeds.withdrawal_cancelled())
+        elif not Web3.isAddress(address):
+            await ctx.send(embed=errors.handle_invalid_address())
         else:
             balance = get_user_balance(conn, w3, ctx.author, token)
-            await ctx.send(f"How much do you want to withdraw?\nYou currently have {balance} {token}")
+            await ctx.send(embed=embeds.withdrawal_amount_prompt(balance, token))
             amount = await bot.wait_for("message", check=is_valid)
-            _amount = Decimal(amount.content)
-            if 0 < _amount <= balance:
-                #TODO: Ok prompt to avoid withdrawals mistakes by users
-                await ctx.send(f"You want to withdraw {_amount} {token.upper()} to {address.content}?\nReply with yes to confirm")
-                confirmation = await bot.wait_for("message", check=is_valid)
-                if confirmation.content.lower() == "yes":
-                    txn_hash = withdraw_to_address(conn, w3, ctx.author, token, _amount, address.content)
-                    await ctx.send(f"Withdrawing {_amount} {token.upper()} to {address.content}.\nTxn Hash: {txn_hash}")
-                else:
-                    #TODO cancel succesful message
-                    pass
+            if amount.content == "cancel":
+                await ctx.send(embed=embeds.withdrawal_cancelled())
+                return
+            if amount.content == "all":
+                _amount = Decimal(balance)
+                if token == "ftm":
+                    _amount -= Decimal(0.0048) # To cover for gas fees
             else:
-                await ctx.send(f"You can't withdraw {_amount} {token.upper()}.\nYou currently have {balance} {token.upper()}")
+                _amount = Decimal(amount.content)
+            if 0 < _amount <= balance:
+                await ctx.send(embed=embeds.withdrawal_ok_prompt(_amount, token,
+                    address))
+                confirmation = await bot.wait_for("message", check=is_valid)
+                if confirmation.content.lower() in ["yes", "y", "confirm"]:
+                    txn_hash = withdraw_to_address(conn, w3, ctx.author, token, _amount, address)
+                    await ctx.send(embed=embeds.withdrawal_successful(_amount,
+                        token, address, txn_hash))
+                else:
+                    await ctx.send(embed=embeds.withdrawal_cancelled())
+            else:
+                await ctx.send(embed=errors.handle_insufficient_balance(_amount,
+                    token, balance))
 
     @withdraw.error
     async def withdraw_error(ctx, error):
-        #TODO: Implement withdraw error handler
         print(error, type(error))
-        await ctx.send(f"Error: {error}")
+        await ctx.send(embed=errors.handle_withdrawal(error))
 
     @bot.command()
-    async def balance(ctx, token: to_lower):
+    async def balance(ctx, *, token: to_lower):
         """Check your token's balance.
 
         e.g. $balance FTM
         """
         if token not in tokens:
-            #TODO: handle invalid token error
+            await ctx.send(embed=errors.handle_invalid_token())
             return
-        amount = get_user_balance(conn, w3, ctx.author, token)
-        await ctx.send(f"You have {amount} {token}.")
+        balance = get_user_balance(conn, w3, ctx.author, token)
+        await ctx.send(embed=embeds.show_balance(ctx, balance, token))
 
     @balance.error
     async def balance_error(ctx, error):
-        #TODO: Implement balance error handler
         print(error, type(error))
-        await ctx.send(f"Error: {error}")
+        await ctx.send(embed=errors.handle_balance(error))
 
     @bot.command()
-    async def tip(ctx, receiver: discord.Member, amount: Decimal, token: to_lower):
+    async def tip(ctx, receiver: discord.Member, amount: Decimal, *, token: to_lower):
         """Send tokens to another user.
 
         e.g. $tip @user 5 FTM
         """
         if token not in tokens:
-            #TODO: handle invalid token error
+            await ctx.send(embed=errors.handle_invalid_token())
             return
 
         balance = get_user_balance(conn, w3, ctx.author, token)
         if amount > balance:
-            await ctx.send(f"Insufficient balance.")
+            await ctx.send(embed=errors.handle_insufficient_balance(amount,
+                token, balance))
+            return
+
         txn_hash = tip_user(conn, w3, ctx.author, receiver, amount, token)
-        await ctx.send(f"You sent {amount} {token} to {receiver}.\nTxn Hash: {txn_hash}")
+        await ctx.send(embed=embeds.tip_succesful(ctx.author, receiver, amount,
+            token, txn_hash))
 
     @tip.error
     async def tip_error(ctx, error):
-        #TODO: Implement tip error handler
         print(error, type(error))
-        await ctx.send(f"Error: {error}")
+        await ctx.send(embed=errors.handle_tipping(error))
 
 
     @bot.listen
