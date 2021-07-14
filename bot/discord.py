@@ -128,6 +128,9 @@ def run_discord_bot(discord_token, conn, w3):
 
         e.g. $tip @user 5 FTM
         """
+        if amount < Decimal((0, (0, 0, 0, 0, 0, 0, 0, 0, 1), -9)):
+            await ctx.send(embed=errors.handle_tip_too_small())
+            return
         if token not in tokens:
             await ctx.send(embed=errors.handle_invalid_token())
             return

@@ -82,6 +82,8 @@ def show_balance(ctx, balance, token):
     embed = discord.Embed(title="Balance", color=0x117de1)
     embed.set_author(name=f"{ctx.author.display_name}'s Wallet",
             icon_url=ctx.author.avatar_url)
+    if balance and balance.as_tuple().exponent < -9:
+        balance = round(balance, 9)
     embed.description = f"**{balance}** {token}"
     return embed
 

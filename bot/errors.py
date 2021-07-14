@@ -38,6 +38,13 @@ def handle_no_funds(token):
 
     return embed
 
+def handle_tip_too_small():
+    embed = discord.Embed(title="Tip too small", color=0xE50000)
+    embed.description = '''The amount you are trying to tip is too small. Come \
+            on, you can do better.'''
+
+    return embed
+
 def handle_withdrawal(error):
     embed = discord.Embed(title="Command Error", color=0xE50000)
     if isinstance(error, commands.MissingRequiredArgument):
