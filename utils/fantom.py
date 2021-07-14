@@ -92,6 +92,8 @@ def get_address_balance(w3, address, token):
         token_abi = get_token_abi(tokens[token])
         token_contract = w3.eth.contract(address=tokens[token]["contract_address"], abi=token_abi)
         balance = token_contract.functions.balanceOf(address).call()
+        if token == "usdc":
+            return w3.fromWei(balance, "mwei")  # usdc only has 6 decimal places
         return w3.fromWei(balance, "ether")
     except:
         raise
