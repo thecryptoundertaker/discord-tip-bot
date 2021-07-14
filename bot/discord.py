@@ -1,5 +1,6 @@
-import discord
 from web3 import Web3
+from typing import Optional
+import discord
 from discord.ext import commands
 from utils.users import (get_address, get_user_balance, withdraw_to_address,
         tip_user)
@@ -28,18 +29,15 @@ def run_discord_bot(discord_token, conn, w3):
         await ctx.send(embed=embeds.list_tokens(tokens))
 
     @bot.command()
-    async def deposit(ctx, *, token: to_lower):
-        """
-        Deposit tokens to your discord account.
-
-        e.g. $deposit FTM
-        """
-        if token not in tokens:
-            await ctx.send(embed=errors.handle_invalid_token())
-            return
+    async def deposit(ctx, device: Optional[str]):
+        """Deposit tokens to your discord account."""
 
         address = get_address(conn, ctx.author)
-        await ctx.send(embed=embeds.deposit_address(token, address))
+        if device == "mobile":
+            await ctx.send(embed=embeds.deposit_address_mobile(address))
+            await ctx.send(f"`{address}`")
+        else:
+            await ctx.send(embed=embeds.deposit_address(address))
 
     @deposit.error
     async def deposit_error(ctx, error):

@@ -10,11 +10,7 @@ def handle_invalid_token():
 
 def handle_deposit(error):
     embed = discord.Embed(title="Command Error", color=0xE50000)
-    if isinstance(error, commands.MissingRequiredArgument):
-        embed.description = '''You need to include a token code (FTM, TOMB, \
-                etc.)\n\ne.g. `$deposit FTM`'''
-    else:
-        embed.description = "Unknown error occurred. Try again."
+    embed.description = "Unknown error occurred. Try again."
 
     return embed
 
@@ -33,15 +29,15 @@ def handle_insufficient_balance(amount, token, balance):
 def handle_no_funds(token):
     token = token.upper()
     embed = discord.Embed(title="Insufficient Balance", color=0xE50000)
-    embed.description = f'''You don't have any **{token}**. Please deposit some \
-            using the `$deposit` command.'''
+    embed.description = f'''You don't have any **{token}**. Please deposit \
+some using the `$deposit` command.'''
 
     return embed
 
 def handle_tip_too_small():
     embed = discord.Embed(title="Tip too small", color=0xE50000)
     embed.description = '''The amount you are trying to tip is too small. Come \
-            on, you can do better.'''
+on, you can do better.'''
 
     return embed
 
@@ -49,7 +45,7 @@ def handle_withdrawal(error):
     embed = discord.Embed(title="Command Error", color=0xE50000)
     if isinstance(error, commands.MissingRequiredArgument):
         embed.description = '''You need to include a token code (FTM, TOMB, \
-                etc.)\n\ne.g. `$withdraw FTM`'''
+etc.)\n\ne.g. `$withdraw FTM`'''
     elif isinstance(error, commands.CommandInvokeError):
         embed.description = "Make sure you have enough funds to cover for gas."
     else:
@@ -61,7 +57,7 @@ def handle_balance(error):
     embed = discord.Embed(title="Command Error", color=0xE50000)
     if isinstance(error, commands.MissingRequiredArgument):
         embed.description = '''You need to include a token code (FTM, TOMB, \
-                etc.)\n\ne.g. `$balance FTM`'''
+etc.)\n\ne.g. `$balance FTM`'''
     else:
         embed.description = "Unknown error occurred. Try again."
 

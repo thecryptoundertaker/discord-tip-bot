@@ -14,13 +14,24 @@ def list_tokens(tokens):
 # deposit
 ###
 
-def deposit_address(token, address):
-    token = token.upper()
-    embed = discord.Embed(title=f"Deposit {token}", color=0x00e500)
+def deposit_address(address):
+    embed = discord.Embed(title=f"Deposit", color=0x00e500)
     embed.description = f'''This is your unique address that is associated with \
-            your discord user. Deposit {token} to this address only.'''
-    embed.add_field(name="Your deposit address", value=f"`{address}`")
+            your discord user. Deposit your tokens to this address only.'''
+    embed.add_field(name="Your deposit address",
+            value=f"`{address}`")
+    embed.set_footer(text='''Pro tip: Use "$deposit mobile" for easy \
+copy-pasting on mobile''')
     return embed
+
+def deposit_address_mobile(address):
+    embed = discord.Embed(title=f"Deposit", color=0x00e500)
+    embed.description = f'''This is your unique address that is associated with \
+your discord user. Deposit your tokens to this address only. Here \
+is your address for easy copy pasting :arrow_down: :arrow_down: \
+:arrow_down:'''
+    return embed
+
 
 ###
 # withdrawal
@@ -51,7 +62,7 @@ def withdrawal_ok_prompt(amount, token, address):
     token = token.upper()
     embed = discord.Embed(title=f"Confirm {token} withdrawal", color=0xf28804)
     embed.description = '''Please make sure everything is correct. This cannot \
-            be reversed.'''
+be reversed.'''
     embed.add_field(name="Destination address", value=f"`{address}`",
             inline=False)
     embed.add_field(name="Withdrawal amount", value=f"**{amount} {token}**",
@@ -95,7 +106,7 @@ def tip_succesful(sender, receiver, amount, token, txn_hash):
     token = token.upper()
     embed = discord.Embed(title="Generous!", color=0xFFD700)
     embed.description = f'''{sender.mention} sent {receiver.mention} {amount} \
-            {token}'''
+{token}'''
     embed.add_field(name="Transaction ID",
             value=f"[{txn_hash}](https://ftmscan.com/tx/{txn_hash})")
 
