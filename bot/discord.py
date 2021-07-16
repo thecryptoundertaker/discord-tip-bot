@@ -12,8 +12,10 @@ from decimal import Decimal
 #TODO add logging in all error functions
 def run_discord_bot(discord_token, conn, w3):
     command_prefix = "$"
-    description = "A Python Discord bot."
-    bot = commands.Bot(command_prefix=command_prefix, description=description)
+    description = "Charon, the Discord tipping bot."
+    bot = commands.Bot(command_prefix=command_prefix,
+                    description=description,
+                    help_command=None)
 
     def to_lower(arg):
         return arg.lower()
@@ -23,6 +25,38 @@ def run_discord_bot(discord_token, conn, w3):
         """Check if bot is online."""
         await ctx.send("pong")
 
+    ###
+    # Help commands
+    ###
+
+    @bot.group(invoke_without_command=True)
+    async def help(ctx):
+        await ctx.send(embed=embeds.help())
+
+    @help.command()
+    async def balance(ctx):
+        await ctx.send(embed=embeds.help_balance())
+
+    @help.command()
+    async def deposit(ctx):
+        await ctx.send(embed=embeds.help_deposit())
+
+    @help.command()
+    async def tip(ctx):
+        await ctx.send(embed=embeds.help_tip())
+
+    @help.command()
+    async def withdraw(ctx):
+        await ctx.send(embed=embeds.help_withdraw())
+
+    @help.command(name="tokens")
+    async def _tokens(ctx):
+        await ctx.send(embed=embeds.help_tokens())
+
+    ###
+    # Tip bot commands
+    ###
+
     @bot.command(name="tokens")
     async def _tokens(ctx):
         """Check the list of supported tokens"""
@@ -30,7 +64,7 @@ def run_discord_bot(discord_token, conn, w3):
 
     @bot.command()
     async def deposit(ctx, device: Optional[str]):
-        """Deposit tokens to your discord account."""
+        """Deposit tokens to your Discord user."""
 
         address = get_address(conn, ctx.author)
         if device == "mobile":
@@ -60,6 +94,11 @@ def run_discord_bot(discord_token, conn, w3):
             await ctx.send(embed=errors.handle_no_funds(token))
             return
 
+        ftm_balance = get_user_balance(conn, w3, ctx.author, "ftm")
+        if ftm_balance < Decimal((0, (0, 0, 9, 6), -4)): # enough gas for 2 transactions
+            await ctx.send(embed=errors.handle_not_enough_gas())
+            return
+
         def is_valid(msg):
             return msg.channel == ctx.channel and msg.author == ctx.author
 
@@ -84,12 +123,15 @@ def run_discord_bot(discord_token, conn, w3):
                     _amount -= Decimal(0.0048) # To cover for gas fees
             else:
                 _amount = Decimal(amount.content)
+            fee = _amount * Decimal((0, (0, 2), -2)) # set withdrawal fee to 2%
+            _amount -= fee
             if 0 < _amount <= balance:
                 await ctx.send(embed=embeds.withdrawal_ok_prompt(_amount, token,
-                    address))
+                            address, fee))
                 confirmation = await bot.wait_for("message", check=is_valid)
                 if confirmation.content.lower() in ["yes", "y", "confirm"]:
-                    txn_hash = withdraw_to_address(conn, w3, ctx.author, token, _amount, address)
+                    txn_hash = withdraw_to_address(conn, w3, ctx.author, token,
+                            _amount, address, fee)
                     await ctx.send(embed=embeds.withdrawal_successful(_amount,
                         token, address, txn_hash))
                 else:

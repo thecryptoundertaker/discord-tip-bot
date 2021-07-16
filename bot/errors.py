@@ -34,6 +34,13 @@ some using the `$deposit` command.'''
 
     return embed
 
+def handle_not_enough_gas():
+    embed = discord.Embed(title="Not enough gas", color=0xE50000)
+    embed.description = f'''You don't have enough **FTM** to cover gas fees. \
+Please deposit some using the `$deposit` command.'''
+
+    return embed
+
 def handle_tip_too_small():
     embed = discord.Embed(title="Tip too small", color=0xE50000)
     embed.description = '''The amount you are trying to tip is too small. Come \
