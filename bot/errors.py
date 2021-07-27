@@ -4,7 +4,7 @@ import discord
 def handle_invalid_token():
     embed = discord.Embed(title="Command Error", color=0xE50000)
     embed.description = '''This token is not supported\n
-                See `$tokens` for a list of supported tokens'''
+See `$tokens` for a list of supported tokens'''
 
     return embed
 
@@ -48,6 +48,19 @@ on, you can do better.'''
 
     return embed
 
+def handle_withdrawal_too_small():
+    embed = discord.Embed(title="Withdrawal too small", color=0xE50000)
+    embed.description = '''The amount you are trying to withdraw is too small. \
+the mininum is 1e-6.'''
+
+    return embed
+
+def handle_invalid_amount():
+    embed = discord.Embed(title="Invalid amount", color=0xE50000)
+    embed.description = "This amount is invalid. Please start again."
+
+    return embed
+
 def handle_withdrawal(error):
     embed = discord.Embed(title="Command Error", color=0xE50000)
     if isinstance(error, commands.MissingRequiredArgument):
@@ -74,7 +87,7 @@ def handle_tipping(error):
     embed = discord.Embed(title="Command Error", color=0xE50000)
     if isinstance(error, commands.MissingRequiredArgument):
         embed.description = '''Usage: `$tip @user <amount> <token>`\
-                \n\ne.g. `$tip @0xKalakaua 1 FTM`'''
+\n\ne.g. `$tip @0xKalakaua 1 FTM`'''
     elif isinstance(error, commands.CommandInvokeError):
         embed.description = "Make sure you have enough funds to cover for gas."
     else:

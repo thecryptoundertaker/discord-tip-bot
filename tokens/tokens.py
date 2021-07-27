@@ -15,35 +15,40 @@ def get_token_abi(token):
 
 ftm = frozendict({
     "symbol": "FTM",
-    "name": "Fantom"
+    "name": "Fantom",
+    "decimals": 18
     })
 
 usdc = frozendict({
     "contract_address": "0x04068DA6C83AFCFA0e13ba15A6696662335D5B75",
     "type": "ERC20",
     "symbol": "USDC",
-    "name": "USD Coin"
+    "name": "USD Coin",
+    "decimals": 6
     })
 
 tbond = frozendict({
     "contract_address": "0x24248CD1747348bDC971a5395f4b3cd7feE94ea0",
     "type": "ERC20",
     "symbol": "TBOND",
-    "name": "Tomb Bond"
+    "name": "Tomb Bond",
+    "decimals": 18
     })
 
 tomb = frozendict({
     "contract_address": "0x6c021Ae822BEa943b2E66552bDe1D2696a53fbB7",
     "type": "ERC20",
     "symbol": "TOMB",
-    "name": "Tomb"
+    "name": "Tomb",
+    "decimals": 18
     })
 
 tshare = frozendict({
     "contract_address": "0x4cdF39285D7Ca8eB3f090fDA0C069ba5F4145B37",
     "type": "ERC20",
     "symbol": "TSHARE",
-    "name": "Tomb Share"
+    "name": "Tomb Share",
+    "decimals": 18
     })
 
 tokens = {

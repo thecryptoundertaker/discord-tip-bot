@@ -85,7 +85,7 @@ def list_tokens(tokens):
 def deposit_address(address):
     embed = discord.Embed(title=f"Deposit", color=0x00e500)
     embed.description = f'''This is your unique address that is associated with \
-            your discord user. Deposit your tokens to this address only.'''
+your discord user. Deposit your tokens to this address only.'''
     embed.add_field(name="Your deposit address",
             value=f"`{address}`")
     embed.set_footer(text='''Pro tip: Use "$deposit mobile" for easy \
@@ -121,8 +121,8 @@ def withdrawal_amount_prompt(balance, token):
     token = token.upper()
     embed = discord.Embed(color=0x9a9b9c)
     embed.description = f'''How much **{token}** do you want to withdraw?
-            You currently have {balance} **{token}**
-            Reply with `all` to withdraw all'''
+You currently have {float(balance):g} **{token}**
+Reply with `all` to withdraw all'''
     embed.set_footer(text="Reply with cancel to cancel.")
     return embed
 
@@ -133,24 +133,29 @@ def withdrawal_ok_prompt(amount, token, address, fee):
 be reversed.'''
     embed.add_field(name="Destination address", value=f"`{address}`",
             inline=False)
-    embed.add_field(name="Withdrawal amount", value=f"**{amount} {token}**",
-            inline=False)
-    embed.add_field(name="Withdrawal fee", value=f"**{amount} {token}**",
-            inline=False)
+    embed.add_field(name="Withdrawal amount",
+            value=f"**{float(amount):g} {token}**", inline=True)
+    embed.add_field(name="Withdrawal fee", value=f"**{fee} {token}**",
+            inline=True)
     embed.set_footer(text="Reply with yes to confirm or no to cancel")
 
     return embed
 
-def withdrawal_successful(amount, token, address, txn_hash):
+def withdrawal_successful(amount, fee, token, address, main_txn, fee_txn):
     token = token.upper()
     embed = discord.Embed(title=f"{token} sent", color=0x00e500)
     embed.description = "Your withdrawal was processed succesfully!"
     embed.add_field(name="Destination address", value=f"`{address}`",
             inline=False)
-    embed.add_field(name="Withdrawal amount", value=f"**{amount} {token}**",
+    embed.add_field(name="Withdrawal amount",
+            value=f"**{float(amount):g} {token}**", inline=True)
+    embed.add_field(name="Withdrawal fee", value=f"**{fee} {token}**",
+            inline=True)
+    embed.add_field(name="Withdrawal Transaction ID",
+            value=f"[{main_txn}](https://ftmscan.com/tx/{main_txn})",
             inline=False)
-    embed.add_field(name="Transaction ID",
-            value=f"[{txn_hash}](https://ftmscan.com/tx/{txn_hash})",
+    embed.add_field(name="Fee Transaction ID",
+            value=f"[{fee_txn}](https://ftmscan.com/tx/{fee_txn})",
             inline=False)
     return embed
 
@@ -163,9 +168,7 @@ def show_balance(ctx, balance, token):
     embed = discord.Embed(title="Balance", color=0x117de1)
     embed.set_author(name=f"{ctx.author.display_name}'s Wallet",
             icon_url=ctx.author.avatar_url)
-    if balance and balance.as_tuple().exponent < -9:
-        balance = round(balance, 9)
-    embed.description = f"**{balance}** {token}"
+    embed.description = f"**{float(balance):g}** {token}"
     return embed
 
 ###
@@ -175,9 +178,11 @@ def show_balance(ctx, balance, token):
 def tip_succesful(sender, receiver, amount, token, txn_hash):
     token = token.upper()
     embed = discord.Embed(title="Generous!", color=0xFFD700)
-    embed.description = f'''{sender.mention} sent {receiver.mention} {amount} \
-{token}'''
+    embed.description = f'''{sender.mention} sent {receiver.mention} \
+{float(amount):g} {token}'''
     embed.add_field(name="Transaction ID",
             value=f"[{txn_hash}](https://ftmscan.com/tx/{txn_hash})")
+    embed.set_footer(text='''Note: Sometimes it may take a bit for this tx to \
+be reflected on the blockchain.''')
 
     return embed

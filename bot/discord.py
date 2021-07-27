@@ -5,6 +5,7 @@ from discord.ext import commands
 from utils.users import (get_address, get_user_balance, withdraw_to_address,
         tip_user)
 from tokens.tokens import tokens
+from utils.utils import round_down
 from bot import errors
 from bot import embeds
 from decimal import Decimal
@@ -69,7 +70,7 @@ def run_discord_bot(discord_token, conn, w3):
         address = get_address(conn, ctx.author)
         if device == "mobile":
             await ctx.send(embed=embeds.deposit_address_mobile(address))
-            await ctx.send(f"`{address}`")
+            await ctx.send(f"{address}")
         else:
             await ctx.send(embed=embeds.deposit_address(address))
 
@@ -95,7 +96,7 @@ def run_discord_bot(discord_token, conn, w3):
             return
 
         ftm_balance = get_user_balance(conn, w3, ctx.author, "ftm")
-        if ftm_balance < Decimal((0, (0, 0, 9, 6), -4)): # enough gas for 2 transactions
+        if ftm_balance < Decimal("0.0096"): # enough gas for 2 transactions
             await ctx.send(embed=errors.handle_not_enough_gas())
             return
 
@@ -114,26 +115,33 @@ def run_discord_bot(discord_token, conn, w3):
             balance = get_user_balance(conn, w3, ctx.author, token)
             await ctx.send(embed=embeds.withdrawal_amount_prompt(balance, token))
             amount = await bot.wait_for("message", check=is_valid)
-            if amount.content == "cancel":
+            if amount.content.lower() == "cancel":
                 await ctx.send(embed=embeds.withdrawal_cancelled())
                 return
-            if amount.content == "all":
+            if amount.content.lower()  == "all":
                 _amount = Decimal(balance)
                 if token == "ftm":
-                    _amount -= Decimal(0.0048) # To cover for gas fees
+                    _amount -= Decimal("0.0096") # To cover for gas fees
             else:
-                _amount = Decimal(amount.content)
-            fee = _amount * Decimal((0, (0, 2), -2)) # set withdrawal fee to 2%
+                try:
+                    _amount = Decimal(amount.content)
+                except:
+                    await ctx.send(embed=errors.handle_invalid_amount())
+                    return
+            fee = round_down(_amount * Decimal("0.02"), 6)  # set withdrawal fee to 2%
             _amount -= fee
+            if _amount < Decimal("1e-6"):
+                await ctx.send(embed=errors.handle_withdrawal_too_small())
+                return
             if 0 < _amount <= balance:
                 await ctx.send(embed=embeds.withdrawal_ok_prompt(_amount, token,
                             address, fee))
                 confirmation = await bot.wait_for("message", check=is_valid)
                 if confirmation.content.lower() in ["yes", "y", "confirm"]:
-                    txn_hash = withdraw_to_address(conn, w3, ctx.author, token,
-                            _amount, address, fee)
+                    main_txn, fee_txn = withdraw_to_address(conn, w3,
+                            ctx.author, token, _amount, address, fee)
                     await ctx.send(embed=embeds.withdrawal_successful(_amount,
-                        token, address, txn_hash))
+                        fee, token, address, main_txn, fee_txn))
                 else:
                     await ctx.send(embed=embeds.withdrawal_cancelled())
             else:
@@ -168,7 +176,7 @@ def run_discord_bot(discord_token, conn, w3):
 
         e.g. $tip @user 5 FTM
         """
-        if amount < Decimal((0, (0, 0, 0, 0, 0, 0, 0, 0, 1), -9)):
+        if amount < Decimal("1e-6"):
             await ctx.send(embed=errors.handle_tip_too_small())
             return
         if token not in tokens:

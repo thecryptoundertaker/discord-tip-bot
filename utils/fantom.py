@@ -2,6 +2,8 @@ from web3 import Web3
 from eth_account import Account
 from secrets import randbits
 from tokens.tokens import tokens, get_token_abi
+from utils.utils import to_decimal, from_decimal
+from decimal import Decimal
 
 import logging
 logger = logging.getLogger(__name__)
@@ -53,11 +55,13 @@ def _send_raw_transaction(w3, signed_txn):
     except:
         raise
 
-def send_tokens(w3, src_account, token, amount, dst_address):
+def send_tokens(w3, src_account, token, amount, dst_address, pending_txs=0):
     """Send <amount> <token> from <src_account> to <dst_address>"""
     try:
-        nonce = w3.eth.getTransactionCount(src_account.address)
-        amount = w3.toWei(amount, "ether")
+        if amount == 0:
+            return
+        nonce = w3.eth.getTransactionCount(src_account.address) + pending_txs
+        amount = to_decimal(amount, tokens[token]['decimals'])
         if token.lower() == "ftm":
             signed_txn = Account.sign_transaction({
                             "chainId": 250,
@@ -88,12 +92,10 @@ def get_address_balance(w3, address, token):
     try:
         if token.upper() == "FTM":
             balance = w3.eth.getBalance(address)
-            return w3.fromWei(balance, "ether")
+            return from_decimal(balance, tokens[token]["decimals"])
         token_abi = get_token_abi(tokens[token])
         token_contract = w3.eth.contract(address=tokens[token]["contract_address"], abi=token_abi)
         balance = token_contract.functions.balanceOf(address).call()
-        if token == "usdc":
-            return w3.fromWei(balance, "mwei")  # usdc only has 6 decimal places
-        return w3.fromWei(balance, "ether")
+        return from_decimal(balance, tokens[token]["decimals"])
     except:
         raise
