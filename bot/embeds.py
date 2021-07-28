@@ -15,8 +15,9 @@ For example:\n`$tip @hades 1 tomb`\n''', inline=False)
     embed.add_field(name="Commands",
                     value='''Here is a list of all the commands available:
 ```$balance\n$deposit\n$tip\n$tokens\n$withdraw```\n''', inline=False)
-    # embed.set_thumbnail(url="https://c4.wallpaperflare.com/wallpaper/645/910/380/fantasy-art-charon-wallpaper-preview.jpg")
-    embed.set_thumbnail(url="https://www.emp-online.es/dw/image/v2/BBQV_PRD/on/demandware.static/-/Sites-master-emp/default/dwd6c21498/images/3/8/6/3/386335a.jpg?sfrm=png")
+    embed.set_thumbnail(url=("https://www.emp-online.es/dw/image/v2/BBQV_PRD"
+                             "/on/demandware.static/-/Sites-master-emp/default/"
+                             "dwd6c21498/images/3/8/6/3/386335a.jpg?sfrm=png"))
     embed.set_footer(text='''For help with a specific command run `$help \
 <command>`''')
 
@@ -84,8 +85,8 @@ def list_tokens(tokens):
 
 def deposit_address(address):
     embed = discord.Embed(title=f"Deposit", color=0x00e500)
-    embed.description = f'''This is your unique address that is associated with \
-your discord user. Deposit your tokens to this address only.'''
+    embed.description = f'''This is your unique address that is associated \
+with your discord user. Deposit your tokens to this address only.'''
     embed.add_field(name="Your deposit address",
             value=f"`{address}`")
     embed.set_footer(text='''Pro tip: Use "$deposit mobile" for easy \
@@ -94,10 +95,9 @@ copy-pasting on mobile''')
 
 def deposit_address_mobile(address):
     embed = discord.Embed(title=f"Deposit", color=0x00e500)
-    embed.description = f'''This is your unique address that is associated with \
-your discord user. Deposit your tokens to this address only. Here \
-is your address for easy copy pasting :arrow_down: :arrow_down: \
-:arrow_down:'''
+    embed.description = f'''This is your unique address that is associated \
+with your discord user. Deposit your tokens to this address only. Here \
+is your address for easy copy pasting :arrow_down: :arrow_down: :arrow_down:'''
     return embed
 
 

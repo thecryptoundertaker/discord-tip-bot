@@ -5,9 +5,9 @@ from discord.ext import commands
 from utils.users import (get_address, get_user_balance, withdraw_to_address,
         tip_user)
 from tokens.tokens import tokens
-from utils.utils import round_down
-from bot import errors
-from bot import embeds
+from utils.utils import round_down, to_lower
+from bot import errors, embeds
+from bot.help import help_commands
 from decimal import Decimal
 
 #TODO add logging in all error functions
@@ -30,29 +30,7 @@ def run_discord_bot(discord_token, conn, w3):
     # Help commands
     ###
 
-    @bot.group(invoke_without_command=True)
-    async def help(ctx):
-        await ctx.send(embed=embeds.help())
-
-    @help.command()
-    async def balance(ctx):
-        await ctx.send(embed=embeds.help_balance())
-
-    @help.command()
-    async def deposit(ctx):
-        await ctx.send(embed=embeds.help_deposit())
-
-    @help.command()
-    async def tip(ctx):
-        await ctx.send(embed=embeds.help_tip())
-
-    @help.command()
-    async def withdraw(ctx):
-        await ctx.send(embed=embeds.help_withdraw())
-
-    @help.command(name="tokens")
-    async def _tokens(ctx):
-        await ctx.send(embed=embeds.help_tokens())
+    help_commands(bot)
 
     ###
     # Tip bot commands
@@ -60,13 +38,10 @@ def run_discord_bot(discord_token, conn, w3):
 
     @bot.command(name="tokens")
     async def _tokens(ctx):
-        """Check the list of supported tokens"""
         await ctx.send(embed=embeds.list_tokens(tokens))
 
     @bot.command()
     async def deposit(ctx, device: Optional[str]):
-        """Deposit tokens to your Discord user."""
-
         address = get_address(conn, ctx.author)
         if device == "mobile":
             await ctx.send(embed=embeds.deposit_address_mobile(address))
@@ -74,31 +49,18 @@ def run_discord_bot(discord_token, conn, w3):
         else:
             await ctx.send(embed=embeds.deposit_address(address))
 
-    @deposit.error
-    async def deposit_error(ctx, error):
-        print(error, type(error))
-        await ctx.send(embed=errors.handle_deposit(error))
-
     @bot.command()
     async def withdraw(ctx, *, token: to_lower):
-        """
-        Withdraw tokens to an address.
-
-        e.g. $withdraw FTM
-        """
         if token not in tokens:
-            await ctx.send(embed=errors.handle_invalid_token())
-            return
+            return await ctx.send(embed=errors.handle_invalid_token())
 
         balance = get_user_balance(conn, w3, ctx.author, token)
         if balance == 0:
-            await ctx.send(embed=errors.handle_no_funds(token))
-            return
+            return await ctx.send(embed=errors.handle_no_funds(token))
 
         ftm_balance = get_user_balance(conn, w3, ctx.author, "ftm")
         if ftm_balance < Decimal("0.0096"): # enough gas for 2 transactions
-            await ctx.send(embed=errors.handle_not_enough_gas())
-            return
+            return await ctx.send(embed=errors.handle_not_enough_gas())
 
         def is_valid(msg):
             return msg.channel == ctx.channel and msg.author == ctx.author
@@ -112,13 +74,11 @@ def run_discord_bot(discord_token, conn, w3):
         elif not Web3.isAddress(address):
             await ctx.send(embed=errors.handle_invalid_address())
         else:
-            balance = get_user_balance(conn, w3, ctx.author, token)
             await ctx.send(embed=embeds.withdrawal_amount_prompt(balance, token))
             amount = await bot.wait_for("message", check=is_valid)
             if amount.content.lower() == "cancel":
-                await ctx.send(embed=embeds.withdrawal_cancelled())
-                return
-            if amount.content.lower()  == "all":
+                return await ctx.send(embed=embeds.withdrawal_cancelled())
+            if amount.content.lower() == "all":
                 _amount = Decimal(balance)
                 if token == "ftm":
                     _amount -= Decimal("0.0096") # To cover for gas fees
@@ -126,13 +86,12 @@ def run_discord_bot(discord_token, conn, w3):
                 try:
                     _amount = Decimal(amount.content)
                 except:
-                    await ctx.send(embed=errors.handle_invalid_amount())
-                    return
+                    return await ctx.send(embed=errors.handle_invalid_amount())
+
             fee = round_down(_amount * Decimal("0.02"), 6)  # set withdrawal fee to 2%
             _amount -= fee
             if _amount < Decimal("1e-6"):
-                await ctx.send(embed=errors.handle_withdrawal_too_small())
-                return
+                return await ctx.send(embed=errors.handle_withdrawal_too_small())
             if 0 < _amount <= balance:
                 await ctx.send(embed=embeds.withdrawal_ok_prompt(_amount, token,
                             address, fee))
@@ -148,62 +107,60 @@ def run_discord_bot(discord_token, conn, w3):
                 await ctx.send(embed=errors.handle_insufficient_balance(_amount,
                     token, balance))
 
+    @bot.command()
+    async def balance(ctx, *, token: to_lower):
+        if token not in tokens:
+            return await ctx.send(embed=errors.handle_invalid_token())
+        balance = get_user_balance(conn, w3, ctx.author, token)
+        await ctx.send(embed=embeds.show_balance(ctx, balance, token))
+
+    @bot.command()
+    async def tip(ctx, receiver: discord.Member, amount: Decimal, *, token: to_lower):
+        if amount < Decimal("1e-6"):
+            return await ctx.send(embed=errors.handle_tip_too_small())
+        if token not in tokens:
+            return await ctx.send(embed=errors.handle_invalid_token())
+
+        balance = get_user_balance(conn, w3, ctx.author, token)
+        if amount > balance:
+            return await ctx.send(embed=errors.handle_insufficient_balance(
+                amount, token, balance))
+
+        txn_hash = tip_user(conn, w3, ctx.author, receiver, amount, token)
+        await ctx.send(embed=embeds.tip_succesful(ctx.author, receiver, amount,
+            token, txn_hash))
+
+    ###
+    # Command Errors
+    ###
+
+    @deposit.error
+    async def deposit_error(ctx, error):
+        print(error, type(error))
+        await ctx.send(embed=errors.handle_deposit(error))
+
     @withdraw.error
     async def withdraw_error(ctx, error):
         print(error, type(error))
         await ctx.send(embed=errors.handle_withdrawal(error))
-
-    @bot.command()
-    async def balance(ctx, *, token: to_lower):
-        """Check your token's balance.
-
-        e.g. $balance FTM
-        """
-        if token not in tokens:
-            await ctx.send(embed=errors.handle_invalid_token())
-            return
-        balance = get_user_balance(conn, w3, ctx.author, token)
-        await ctx.send(embed=embeds.show_balance(ctx, balance, token))
 
     @balance.error
     async def balance_error(ctx, error):
         print(error, type(error))
         await ctx.send(embed=errors.handle_balance(error))
 
-    @bot.command()
-    async def tip(ctx, receiver: discord.Member, amount: Decimal, *, token: to_lower):
-        """Send tokens to another user.
-
-        e.g. $tip @user 5 FTM
-        """
-        if amount < Decimal("1e-6"):
-            await ctx.send(embed=errors.handle_tip_too_small())
-            return
-        if token not in tokens:
-            await ctx.send(embed=errors.handle_invalid_token())
-            return
-
-        balance = get_user_balance(conn, w3, ctx.author, token)
-        if amount > balance:
-            await ctx.send(embed=errors.handle_insufficient_balance(amount,
-                token, balance))
-            return
-
-        txn_hash = tip_user(conn, w3, ctx.author, receiver, amount, token)
-        await ctx.send(embed=embeds.tip_succesful(ctx.author, receiver, amount,
-            token, txn_hash))
-
     @tip.error
     async def tip_error(ctx, error):
         print(error, type(error))
         await ctx.send(embed=errors.handle_tipping(error))
 
+    ###
+    # Run Bot
+    ###
 
     @bot.listen
     async def on_message(message):
-        if "help" in message.content.lower():
-            await message.channel.send("<Help message here>")
-            await bot.process_commands(message)
+        await bot.process_commands(message)
 
     @bot.event
     async def on_ready():

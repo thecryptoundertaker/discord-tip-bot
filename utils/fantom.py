@@ -15,7 +15,8 @@ logger = logging.getLogger(__name__)
 def connect_to_fantom(provider_address, provider_type="wss", timeout=60):
     try:
         if provider_type == "wss" or "ws":
-            w3 = Web3(Web3.WebsocketProvider(provider_address, websocket_timeout=timeout))
+            w3 = Web3(Web3.WebsocketProvider(provider_address,
+                      websocket_timeout=timeout))
         else:
             raise Exception
         if w3.isConnected():
@@ -62,26 +63,22 @@ def send_tokens(w3, src_account, token, amount, dst_address, pending_txs=0):
             return
         nonce = w3.eth.getTransactionCount(src_account.address) + pending_txs
         amount = to_decimal(amount, tokens[token]['decimals'])
+        txn_details = {
+                "chainId": 250,
+                "gas": 80000,
+                "gasPrice": w3.toWei(60, "gwei"),
+                "nonce": nonce
+                }
         if token.lower() == "ftm":
-            signed_txn = Account.sign_transaction({
-                            "chainId": 250,
-                            "gas": 80000,
-                            "gasPrice": w3.toWei(60, "gwei"),
-                            "nonce": nonce,
-                            "to": dst_address,
-                            "value": amount
-                        }, src_account.key)
-
+            txn_details.update({"to": dst_address, "value": amount})
+            signed_txn = Account.sign_transaction(txn_details, src_account.key)
         else:
             token_abi = get_token_abi(tokens[token])
-            token_contract = w3.eth.contract(address=tokens[token]["contract_address"], abi=token_abi)
+            token_contract = w3.eth.contract(
+                                    address=tokens[token]["contract_address"],
+                                    abi=token_abi)
             contract_func = token_contract.functions.transfer(dst_address, amount)
-            txn = contract_func.buildTransaction({
-                                "chainId": 250,
-                                "gas": 80000,
-                                "gasPrice": w3.toWei(60, "gwei"),
-                                "nonce": nonce
-                            })
+            txn = contract_func.buildTransaction(txn_details)
             signed_txn = _sign_transaction(txn, src_account.key)
         txn_hash = _send_raw_transaction(w3, signed_txn)
         return txn_hash.hex()
@@ -94,7 +91,9 @@ def get_address_balance(w3, address, token):
             balance = w3.eth.getBalance(address)
             return from_decimal(balance, tokens[token]["decimals"])
         token_abi = get_token_abi(tokens[token])
-        token_contract = w3.eth.contract(address=tokens[token]["contract_address"], abi=token_abi)
+        token_contract = w3.eth.contract(
+                                    address=tokens[token]["contract_address"],
+                                    abi=token_abi)
         balance = token_contract.functions.balanceOf(address).call()
         return from_decimal(balance, tokens[token]["decimals"])
     except:

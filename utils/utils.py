@@ -2,6 +2,9 @@ import math
 from decimal import Decimal
 from tokens.tokens import tokens
 
+def to_lower(arg):
+    return arg.lower()
+
 def round_down(n, decimals=0):
     multiplier = Decimal(10 ** decimals)
     return math.floor(n * multiplier) / multiplier
