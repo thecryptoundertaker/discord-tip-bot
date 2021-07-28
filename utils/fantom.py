@@ -1,3 +1,4 @@
+from loguru import logger
 from web3 import Web3
 from eth_account import Account
 from secrets import randbits
@@ -5,31 +6,25 @@ from tokens.tokens import tokens, get_token_abi
 from utils.utils import to_decimal, from_decimal
 from decimal import Decimal
 
-import logging
-logger = logging.getLogger(__name__)
-
 ###
 # Node utils
 ###
 
+@logger.catch
 def connect_to_fantom(provider_address, provider_type="wss", timeout=60):
-    try:
-        if provider_type == "wss" or "ws":
-            w3 = Web3(Web3.WebsocketProvider(provider_address,
-                      websocket_timeout=timeout))
-        else:
-            raise Exception
-        if w3.isConnected():
-            # XXX add these to log file
-            print(f"* Connected to Fantom!")
-            print(f"* Node Address: {provider_address}")
-            print(f"* Provider Type: {provider_type}")
-            print(f"* Current Block: {w3.eth.block_number}")
-            return w3
-        else:
-            return None
-    except:
+    if provider_type == "wss" or "ws":
+        w3 = Web3(Web3.WebsocketProvider(provider_address,
+                    websocket_timeout=timeout))
+    else:
         raise Exception
+    if w3.isConnected():
+        logger.info("Connected to Fantom!")
+        logger.info("Node Address: {}", provider_address)
+        logger.info("Provider Type: {}", provider_type)
+        logger.info("Current Block: {}", w3.eth.block_number)
+        return w3
+    else:
+        return None
 
 ###
 # Wallet Utils

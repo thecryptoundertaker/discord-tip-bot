@@ -1,15 +1,14 @@
+from loguru import logger
 from frozendict import frozendict
 import json
 
 # utils
 
+@logger.catch
 def get_token_abi(token):
-    try:
-        with open("tokens/abi/%s.json" % token['symbol'].lower()) as f:
-            abi = json.load(f)
-        return abi
-    except:
-        raise
+    with open("tokens/abi/%s.json" % token['symbol'].lower()) as f:
+        abi = json.load(f)
+    return abi
 
 # supported tokens
 

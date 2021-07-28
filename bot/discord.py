@@ -1,3 +1,4 @@
+from loguru import logger
 from web3 import Web3
 from typing import Optional
 import discord
@@ -10,7 +11,7 @@ from bot import errors, embeds
 from bot.help import help_commands
 from decimal import Decimal
 
-#TODO add logging in all error functions
+@logger.catch
 def run_discord_bot(discord_token, conn, w3):
     command_prefix = "$"
     description = "Charon, the Discord tipping bot."
@@ -38,10 +39,12 @@ def run_discord_bot(discord_token, conn, w3):
 
     @bot.command(name="tokens")
     async def _tokens(ctx):
+        logger.debug("Executing $tokens command.")
         await ctx.send(embed=embeds.list_tokens(tokens))
 
     @bot.command()
     async def deposit(ctx, device: Optional[str]):
+        logger.debug("Executing $deposit command.")
         address = get_address(conn, ctx.author)
         if device == "mobile":
             await ctx.send(embed=embeds.deposit_address_mobile(address))
@@ -51,6 +54,7 @@ def run_discord_bot(discord_token, conn, w3):
 
     @bot.command()
     async def withdraw(ctx, *, token: to_lower):
+        logger.debug("Executing $withdraw command.")
         if token not in tokens:
             return await ctx.send(embed=errors.handle_invalid_token())
 
@@ -109,6 +113,7 @@ def run_discord_bot(discord_token, conn, w3):
 
     @bot.command()
     async def balance(ctx, *, token: to_lower):
+        logger.debug("Executing $balance command.")
         if token not in tokens:
             return await ctx.send(embed=errors.handle_invalid_token())
         balance = get_user_balance(conn, w3, ctx.author, token)
@@ -116,6 +121,7 @@ def run_discord_bot(discord_token, conn, w3):
 
     @bot.command()
     async def tip(ctx, receiver: discord.Member, amount: Decimal, *, token: to_lower):
+        logger.debug("Executing $tip command.")
         if amount < Decimal("1e-6"):
             return await ctx.send(embed=errors.handle_tip_too_small())
         if token not in tokens:
@@ -136,22 +142,22 @@ def run_discord_bot(discord_token, conn, w3):
 
     @deposit.error
     async def deposit_error(ctx, error):
-        print(error, type(error))
+        logger.error("{}: {}", type(error).__name__, error)
         await ctx.send(embed=errors.handle_deposit(error))
 
     @withdraw.error
     async def withdraw_error(ctx, error):
-        print(error, type(error))
+        logger.error("{}: {}", type(error).__name__, error)
         await ctx.send(embed=errors.handle_withdrawal(error))
 
     @balance.error
     async def balance_error(ctx, error):
-        print(error, type(error))
+        logger.error("{}: {}", type(error).__name__, error)
         await ctx.send(embed=errors.handle_balance(error))
 
     @tip.error
     async def tip_error(ctx, error):
-        print(error, type(error))
+        logger.error("{}: {}", type(error).__name__, error)
         await ctx.send(embed=errors.handle_tipping(error))
 
     ###
@@ -164,6 +170,6 @@ def run_discord_bot(discord_token, conn, w3):
 
     @bot.event
     async def on_ready():
-        print(f"Bot {bot.user} is ready!")
+        logger.info("Bot {} is ready!", bot.user)
 
     bot.run(discord_token)

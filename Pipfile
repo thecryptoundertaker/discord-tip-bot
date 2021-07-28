@@ -45,6 +45,7 @@ websockets = "==8.1"
 yarl = "==1.6.3"
 "discord.py" = "==1.7.3"
 python-dotenv = "*"
+loguru = "*"
 
 [dev-packages]
 

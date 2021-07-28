@@ -1,9 +1,11 @@
+from loguru import logger
 import discord
 
 ###
 # help
 ###
 
+@logger.catch
 def help():
     embed = discord.Embed(title="Help", color=0x117de1)
     embed.description = '''Charon is a bot that allows you to tip other \
@@ -23,6 +25,7 @@ For example:\n`$tip @hades 1 tomb`\n''', inline=False)
 
     return embed
 
+@logger.catch
 def help_balance():
     embed = discord.Embed(title="Balance help", color=0x117de1)
     embed.description = "Check your token's balance."
@@ -32,6 +35,7 @@ def help_balance():
 
     return embed
 
+@logger.catch
 def help_deposit():
     embed = discord.Embed(title="Deposit help", color=0x117de1)
     embed.description = '''Deposit tokens to your Discord user. Deposit \
@@ -43,6 +47,7 @@ copy-pasting on mobile''')
     
     return embed
 
+@logger.catch
 def help_tip():
     embed = discord.Embed(title="Tip help", color=0x117de1)
     embed.description = "Send tokens to another Discord user."
@@ -53,6 +58,7 @@ def help_tip():
 
     return embed
 
+@logger.catch
 def help_withdraw():
     embed = discord.Embed(title="Withdraw help", color=0x117de1)
     embed.description = "Withdraw tokens to an address."
@@ -62,6 +68,7 @@ def help_withdraw():
 
     return embed
 
+@logger.catch
 def help_tokens():
     embed = discord.Embed(title="Tokens help", color=0x117de1)
     embed.description = "Check the list of supported tokens."
@@ -72,6 +79,8 @@ def help_tokens():
 ###
 # tokens
 ###
+
+@logger.catch
 def list_tokens(tokens):
     embed = discord.Embed(title="Tokens supported", color=0x117de1)
     embed.description = '\n'.join(
@@ -83,6 +92,7 @@ def list_tokens(tokens):
 # deposit
 ###
 
+@logger.catch
 def deposit_address(address):
     embed = discord.Embed(title=f"Deposit", color=0x00e500)
     embed.description = f'''This is your unique address that is associated \
@@ -93,6 +103,7 @@ with your discord user. Deposit your tokens to this address only.'''
 copy-pasting on mobile''')
     return embed
 
+@logger.catch
 def deposit_address_mobile(address):
     embed = discord.Embed(title=f"Deposit", color=0x00e500)
     embed.description = f'''This is your unique address that is associated \
@@ -105,6 +116,7 @@ is your address for easy copy pasting :arrow_down: :arrow_down: :arrow_down:'''
 # withdrawal
 ###
 
+@logger.catch
 def dst_address_prompt(token):
     token = token.upper()
     embed = discord.Embed(color=0x9a9b9c)
@@ -112,11 +124,13 @@ def dst_address_prompt(token):
     embed.set_footer(text="Reply with cancel to cancel.")
     return embed
 
+@logger.catch
 def withdrawal_cancelled():
     embed = discord.Embed(color=0x9a9b9c)
     embed.description = "Withdrawal cancelled."
     return embed
 
+@logger.catch
 def withdrawal_amount_prompt(balance, token):
     token = token.upper()
     embed = discord.Embed(color=0x9a9b9c)
@@ -126,6 +140,7 @@ Reply with `all` to withdraw all'''
     embed.set_footer(text="Reply with cancel to cancel.")
     return embed
 
+@logger.catch
 def withdrawal_ok_prompt(amount, token, address, fee):
     token = token.upper()
     embed = discord.Embed(title=f"Confirm {token} withdrawal", color=0xf28804)
@@ -141,6 +156,7 @@ be reversed.'''
 
     return embed
 
+@logger.catch
 def withdrawal_successful(amount, fee, token, address, main_txn, fee_txn):
     token = token.upper()
     embed = discord.Embed(title=f"{token} sent", color=0x00e500)
@@ -163,6 +179,7 @@ def withdrawal_successful(amount, fee, token, address, main_txn, fee_txn):
 # balance
 ###
 
+@logger.catch
 def show_balance(ctx, balance, token):
     token = token.upper()
     embed = discord.Embed(title="Balance", color=0x117de1)
@@ -175,6 +192,7 @@ def show_balance(ctx, balance, token):
 # tip
 ###
 
+@logger.catch
 def tip_succesful(sender, receiver, amount, token, txn_hash):
     token = token.upper()
     embed = discord.Embed(title="Generous!", color=0xFFD700)

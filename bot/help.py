@@ -1,6 +1,8 @@
+from loguru import logger
 from bot import embeds
 
 
+@logger.catch
 def help_commands(bot):
 
     @bot.group(invoke_without_command=True)
