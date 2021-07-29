@@ -48,10 +48,10 @@ def run_discord_bot(discord_token, conn, w3):
         logger.debug("Executing $deposit command.")
         address = get_address(conn, ctx.author)
         if device == "mobile":
-            await ctx.send(embed=embeds.deposit_address_mobile(ctx, address))
+            await ctx.send(embed=embeds.deposit_address_mobile(address))
             await ctx.send(f"{address}")
         else:
-            await ctx.send(embed=embeds.deposit_address(ctx, address))
+            await ctx.send(embed=embeds.deposit_address(address))
 
     @bot.command()
     @commands.dm_only()

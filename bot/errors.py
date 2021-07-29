@@ -30,7 +30,7 @@ def handle_invalid_address():
 def handle_insufficient_balance(amount, token, balance):
     token = token.upper()
     embed = discord.Embed(title="Insufficient Balance", color=0xE50000)
-    embed.add_field(name="Your balance", value=f"**{balance} {token}**")
+    embed.add_field(name="Your balance", value=f"**{float(balance):g} {token}**")
 
     return embed
 
@@ -106,6 +106,8 @@ def handle_tipping(error):
     if isinstance(error, commands.MissingRequiredArgument):
         embed.description = '''Usage: `$tip @user <amount> <token>`\
 \n\ne.g. `$tip @0xKalakaua 1 FTM`'''
+    elif isinstance(error, commands.MemberNotFound):
+        embed.description = str(error)
     elif isinstance(error, commands.CommandInvokeError):
         embed.description = "Make sure you have enough funds to cover for gas."
     else:
