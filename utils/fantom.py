@@ -34,7 +34,7 @@ def connect_to_fantom(provider_address, provider_type="wss", timeout=60):
 def create_account():
     return Account.create(randbits(4096))
 
-@logget.catch(reraise=True)
+@logger.catch(reraise=True)
 def _sign_transaction(txn, key):
     # XXX create key handling functions
     signed_txn = Account.sign_transaction(txn, key)
