@@ -93,10 +93,12 @@ def list_tokens(tokens):
 ###
 
 @logger.catch
-def deposit_address(address):
+def deposit_address(ctx, address):
     embed = discord.Embed(title=f"Deposit", color=0x00e500)
     embed.description = f'''This is your unique address that is associated \
 with your discord user. Deposit your tokens to this address only.'''
+    embed.set_author(name=f"{ctx.author.display_name}",
+            icon_url=ctx.author.avatar_url)
     embed.add_field(name="Your deposit address",
             value=f"`{address}`")
     embed.set_footer(text='''Pro tip: Use "$deposit mobile" for easy \
@@ -104,11 +106,13 @@ copy-pasting on mobile''')
     return embed
 
 @logger.catch
-def deposit_address_mobile(address):
+def deposit_address_mobile(ctx, address):
     embed = discord.Embed(title=f"Deposit", color=0x00e500)
     embed.description = f'''This is your unique address that is associated \
 with your discord user. Deposit your tokens to this address only. Here \
 is your address for easy copy pasting :arrow_down: :arrow_down: :arrow_down:'''
+    embed.set_author(name=f"{ctx.author.display_name}",
+            icon_url=ctx.author.avatar_url)
     return embed
 
 
