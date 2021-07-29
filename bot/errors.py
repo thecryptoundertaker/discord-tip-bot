@@ -82,8 +82,6 @@ def handle_withdrawal(error):
 etc.)\n\ne.g. `$withdraw FTM`'''
     elif isinstance(error, commands.PrivateMessageOnly):
         embed.description = "This command can only be used in DM."
-    elif isinstance(error, commands.CommandInvokeError):
-        embed.description = "Make sure you have enough funds to cover for gas."
     else:
         embed.description = "Unknown error occurred. Try again."
 
@@ -108,8 +106,6 @@ def handle_tipping(error):
 \n\ne.g. `$tip @0xKalakaua 1 FTM`'''
     elif isinstance(error, commands.MemberNotFound):
         embed.description = str(error)
-    elif isinstance(error, commands.CommandInvokeError):
-        embed.description = "Make sure you have enough funds to cover for gas."
     else:
         embed.description = "Unknown error occurred. Try again."
 
