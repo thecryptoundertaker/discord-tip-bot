@@ -10,7 +10,7 @@ from decimal import Decimal
 # Node utils
 ###
 
-@logger.catch
+@logger.catch(reraise=True)
 def connect_to_fantom(provider_address, provider_type="wss", timeout=60):
     if provider_type == "wss" or "ws":
         w3 = Web3(Web3.WebsocketProvider(provider_address,
@@ -30,66 +30,56 @@ def connect_to_fantom(provider_address, provider_type="wss", timeout=60):
 # Wallet Utils
 ###
 
+@logger.catch(reraise=True)
 def create_account():
-    try:
-        return Account.create(randbits(4096))
-    except:
-        raise
+    return Account.create(randbits(4096))
 
+@logget.catch(reraise=True)
 def _sign_transaction(txn, key):
     # XXX create key handling functions
-    try:
-        signed_txn = Account.sign_transaction(txn, key)
-        return signed_txn
-    except:
-        raise
+    signed_txn = Account.sign_transaction(txn, key)
+    return signed_txn
 
+@logger.catch(reraise=True)
 def _send_raw_transaction(w3, signed_txn):
-    try:
-        txn_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
-        return txn_hash
-    except:
-        raise
+    txn_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+    return txn_hash
 
+@logger.catch(reraise=True)
 def send_tokens(w3, src_account, token, amount, dst_address, pending_txs=0):
     """Send <amount> <token> from <src_account> to <dst_address>"""
-    try:
-        if amount == 0:
-            return
-        nonce = w3.eth.getTransactionCount(src_account.address) + pending_txs
-        amount = to_decimal(amount, tokens[token]['decimals'])
-        txn_details = {
-                "chainId": 250,
-                "gas": 80000,
-                "gasPrice": w3.toWei(60, "gwei"),
-                "nonce": nonce
-                }
-        if token.lower() == "ftm":
-            txn_details.update({"to": dst_address, "value": amount})
-            signed_txn = Account.sign_transaction(txn_details, src_account.key)
-        else:
-            token_abi = get_token_abi(tokens[token])
-            token_contract = w3.eth.contract(
-                                    address=tokens[token]["contract_address"],
-                                    abi=token_abi)
-            contract_func = token_contract.functions.transfer(dst_address, amount)
-            txn = contract_func.buildTransaction(txn_details)
-            signed_txn = _sign_transaction(txn, src_account.key)
-        txn_hash = _send_raw_transaction(w3, signed_txn)
-        return txn_hash.hex()
-    except:
-        raise
-
-def get_address_balance(w3, address, token):
-    try:
-        if token.upper() == "FTM":
-            balance = w3.eth.getBalance(address)
-            return from_decimal(balance, tokens[token]["decimals"])
+    if amount == 0:
+        return
+    nonce = w3.eth.getTransactionCount(src_account.address) + pending_txs
+    amount = to_decimal(amount, tokens[token]['decimals'])
+    txn_details = {
+            "chainId": 250,
+            "gas": 80000,
+            "gasPrice": w3.toWei(60, "gwei"),
+            "nonce": nonce
+            }
+    if token.lower() == "ftm":
+        txn_details.update({"to": dst_address, "value": amount})
+        signed_txn = Account.sign_transaction(txn_details, src_account.key)
+    else:
         token_abi = get_token_abi(tokens[token])
         token_contract = w3.eth.contract(
-                                    address=tokens[token]["contract_address"],
-                                    abi=token_abi)
-        balance = token_contract.functions.balanceOf(address).call()
+                                address=tokens[token]["contract_address"],
+                                abi=token_abi)
+        contract_func = token_contract.functions.transfer(dst_address, amount)
+        txn = contract_func.buildTransaction(txn_details)
+        signed_txn = _sign_transaction(txn, src_account.key)
+    txn_hash = _send_raw_transaction(w3, signed_txn)
+    return txn_hash.hex()
+
+@logger.catch(reraise=True)
+def get_address_balance(w3, address, token):
+    if token.upper() == "FTM":
+        balance = w3.eth.getBalance(address)
         return from_decimal(balance, tokens[token]["decimals"])
-    except:
-        raise
+    token_abi = get_token_abi(tokens[token])
+    token_contract = w3.eth.contract(
+                                address=tokens[token]["contract_address"],
+                                abi=token_abi)
+    balance = token_contract.functions.balanceOf(address).call()
+    return from_decimal(balance, tokens[token]["decimals"])

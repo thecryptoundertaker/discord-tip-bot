@@ -2,7 +2,7 @@ import sqlite3
 from loguru import logger
 from eth_account import Account
 
-@logger.catch
+@logger.catch(reraise=True)
 def get_db_connection(db_file):
     """
     Create a database connection to the SQLite database specified by db_file
@@ -13,7 +13,7 @@ def get_db_connection(db_file):
     logger.debug("Connecting to {} db", db_file)
     return sqlite3.connect(db_file)
 
-@logger.catch
+@logger.catch(reraise=True)
 def init_db(conn):
     cur = conn.cursor()
     logger.debug("Creating table 'accounts' if it doesn't exist.")
@@ -24,14 +24,14 @@ def init_db(conn):
     conn.commit()
     return cur
 
-@logger.catch
+@logger.catch(reraise=True)
 def get_db(db_file):
     logger.debug("Getting the {} database connection", db_file)
     conn = get_db_connection(db_file)
     curr = init_db(conn)
     return conn
 
-@logger.catch
+@logger.catch(reraise=True)
 def insert_account(conn, new_entry):
     """
     Insert a new (user_id, key) to the accounts table
@@ -44,7 +44,7 @@ def insert_account(conn, new_entry):
     cur.execute(query, new_entry)
     conn.commit()
 
-@logger.catch
+@logger.catch(reraise=True)
 def get_account_from_db(conn, user_id):
     """
     Get a user's account from the accounts table
