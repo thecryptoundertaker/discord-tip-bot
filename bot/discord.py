@@ -43,6 +43,7 @@ def run_discord_bot(discord_token, conn, w3):
         await ctx.send(embed=embeds.list_tokens(tokens))
 
     @bot.command()
+    @commands.dm_only()
     async def deposit(ctx, device: Optional[str]):
         logger.debug("Executing $deposit command.")
         address = get_address(conn, ctx.author)
@@ -53,6 +54,7 @@ def run_discord_bot(discord_token, conn, w3):
             await ctx.send(embed=embeds.deposit_address(ctx, address))
 
     @bot.command()
+    @commands.dm_only()
     async def withdraw(ctx, *, token: to_lower):
         logger.debug("Executing $withdraw command.")
         if token not in tokens:

@@ -13,7 +13,10 @@ See `$tokens` for a list of supported tokens'''
 @logger.catch
 def handle_deposit(error):
     embed = discord.Embed(title="Command Error", color=0xE50000)
-    embed.description = "Unknown error occurred. Try again."
+    if isinstance(error, commands.PrivateMessageOnly):
+        embed.description = "This command can only be used in DM."
+    else:
+        embed.description = "Unknown error occurred. Try again."
 
     return embed
 
@@ -77,6 +80,8 @@ def handle_withdrawal(error):
     if isinstance(error, commands.MissingRequiredArgument):
         embed.description = '''You need to include a token code (FTM, TOMB, \
 etc.)\n\ne.g. `$withdraw FTM`'''
+    elif isinstance(error, commands.PrivateMessageOnly):
+        embed.description = "This command can only be used in DM."
     elif isinstance(error, commands.CommandInvokeError):
         embed.description = "Make sure you have enough funds to cover for gas."
     else:
