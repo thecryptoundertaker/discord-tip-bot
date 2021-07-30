@@ -1,6 +1,7 @@
 import sqlite3
 from loguru import logger
 from eth_account import Account
+from utils.encryption import decrypt_data
 
 @logger.catch(reraise=True)
 def get_db_connection(db_file):
@@ -22,13 +23,13 @@ def init_db(conn):
                 key TEXT NOT NULL UNIQUE
                 )''')
     conn.commit()
-    return cur
+    cur.close()
 
 @logger.catch(reraise=True)
 def get_db(db_file):
     logger.debug("Getting the {} database connection", db_file)
     conn = get_db_connection(db_file)
-    curr = init_db(conn)
+    init_db(conn)
     return conn
 
 @logger.catch(reraise=True)
@@ -36,13 +37,14 @@ def insert_account(conn, new_entry):
     """
     Insert a new (user_id, key) to the accounts table
     :param conn: Connection object
-    :param new_entry: Tuple with (user_id (int), key (hex str))
+    :param new_entry: Tuple with (user_id (int), key (encrypted str))
     """
     logger.info("Inserting {} to db.", new_entry)
     query = '''INSERT INTO accounts (user_id,key) VALUES(?,?)'''
     cur = conn.cursor()
     cur.execute(query, new_entry)
     conn.commit()
+    cur.close()
 
 @logger.catch(reraise=True)
 def get_account_from_db(conn, user_id):
@@ -53,12 +55,13 @@ def get_account_from_db(conn, user_id):
     :return: Account object
     """
 
-    logger.debug("Getting account from {}.", user_id)
+    logger.debug("Getting account from user {}.", user_id)
     cur = conn.cursor()
     cur.execute("SELECT key FROM accounts WHERE user_id=?", (user_id,))
     key = cur.fetchone()
     if not key:
         return None
-    account = Account.from_key(key[0])
+    account = Account.from_key(decrypt_data(key[0]))
 
+    cur.close()
     return account

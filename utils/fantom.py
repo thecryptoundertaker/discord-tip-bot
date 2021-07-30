@@ -35,10 +35,8 @@ def create_account():
     return Account.create(randbits(4096))
 
 @logger.catch(reraise=True)
-def _sign_transaction(txn, key):
-    # XXX create key handling functions
-    signed_txn = Account.sign_transaction(txn, key)
-    return signed_txn
+def _sign_transaction(txn, account):
+    return Account.sign_transaction(txn, account.key)
 
 @logger.catch(reraise=True)
 def _send_raw_transaction(w3, signed_txn):
@@ -60,7 +58,7 @@ def send_tokens(w3, src_account, token, amount, dst_address, pending_txs=0):
             }
     if token.lower() == "ftm":
         txn_details.update({"to": dst_address, "value": amount})
-        signed_txn = Account.sign_transaction(txn_details, src_account.key)
+        signed_txn = _sign_transaction(txn_details, src_account)
     else:
         token_abi = get_token_abi(tokens[token])
         token_contract = w3.eth.contract(
@@ -68,7 +66,7 @@ def send_tokens(w3, src_account, token, amount, dst_address, pending_txs=0):
                                 abi=token_abi)
         contract_func = token_contract.functions.transfer(dst_address, amount)
         txn = contract_func.buildTransaction(txn_details)
-        signed_txn = _sign_transaction(txn, src_account.key)
+        signed_txn = _sign_transaction(txn, src_account)
     txn_hash = _send_raw_transaction(w3, signed_txn)
     return txn_hash.hex()
 

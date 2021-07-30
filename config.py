@@ -11,8 +11,8 @@ def get_config(debug=False):
     **os.environ  # override loaded values with environment variables
     }
 
-        assert(config_dict['DISCORD_TOKEN'])
-        assert(config_dict['SECRET_KEY'])
+    assert(config_dict['DISCORD_TOKEN'])
+    assert(config_dict['SECRET_KEY'])
 
     return config_dict
 
