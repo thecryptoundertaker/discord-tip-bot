@@ -170,9 +170,10 @@ def withdrawal_successful(amount, fee, token, address, main_txn, fee_txn):
     embed.add_field(name="Withdrawal Transaction ID",
             value=f"[{main_txn}](https://ftmscan.com/tx/{main_txn})",
             inline=False)
-    embed.add_field(name="Fee Transaction ID",
-            value=f"[{fee_txn}](https://ftmscan.com/tx/{fee_txn})",
-            inline=False)
+    if fee_txn:
+        embed.add_field(name="Fee Transaction ID",
+                value=f"[{fee_txn}](https://ftmscan.com/tx/{fee_txn})",
+                inline=False)
     return embed
 
 ###
