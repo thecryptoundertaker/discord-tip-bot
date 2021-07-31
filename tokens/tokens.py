@@ -4,7 +4,7 @@ import json
 
 # utils
 
-@logger.catch(reraise=True)
+@logger.catch
 def get_token_abi(token):
     with open("tokens/abi/%s.json" % token['symbol'].lower()) as f:
         abi = json.load(f)

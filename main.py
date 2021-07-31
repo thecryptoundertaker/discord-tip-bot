@@ -7,7 +7,7 @@ from bot.discord import run_discord_bot
 
 logger.add("logs/{time:YYYY-MM-DD}.log", level=config["LOG_LEVEL"], rotation="100 MB")
 
-@logger.catch(reraise=True)
+@logger.catch
 def main():
     conn = get_db(config['DATABASE_FILE'])
     w3 = connect_to_fantom(config["PROVIDER_ADDRESS"])

@@ -10,7 +10,7 @@ from decimal import Decimal
 # Node utils
 ###
 
-@logger.catch(reraise=True)
+@logger.catch
 def connect_to_fantom(provider_address, provider_type="wss", timeout=60):
     if provider_type == "wss" or "ws":
         w3 = Web3(Web3.WebsocketProvider(provider_address,
@@ -30,20 +30,20 @@ def connect_to_fantom(provider_address, provider_type="wss", timeout=60):
 # Wallet Utils
 ###
 
-@logger.catch(reraise=True)
+@logger.catch
 def create_account():
     return Account.create(randbits(4096))
 
-@logger.catch(reraise=True)
+@logger.catch
 def _sign_transaction(txn, account):
     return Account.sign_transaction(txn, account.key)
 
-@logger.catch(reraise=True)
+@logger.catch
 def _send_raw_transaction(w3, signed_txn):
     txn_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
     return txn_hash
 
-@logger.catch(reraise=True)
+@logger.catch
 def send_tokens(w3, src_account, token, amount, dst_address, pending_txs=0):
     """Send <amount> <token> from <src_account> to <dst_address>"""
     if amount == 0:
@@ -70,7 +70,7 @@ def send_tokens(w3, src_account, token, amount, dst_address, pending_txs=0):
     txn_hash = _send_raw_transaction(w3, signed_txn)
     return txn_hash.hex()
 
-@logger.catch(reraise=True)
+@logger.catch
 def get_address_balance(w3, address, token):
     if token.upper() == "FTM":
         balance = w3.eth.getBalance(address)

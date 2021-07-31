@@ -2,7 +2,7 @@ from loguru import logger
 import os
 from dotenv import dotenv_values 
 
-@logger.catch(reraise=True)
+@logger.catch
 def get_config(debug=False):
     logger.debug("Getting config.")
     config_dict = {
