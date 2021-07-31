@@ -4,18 +4,6 @@ from nacl.encoding import URLSafeBase64Encoder
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from config import config
 
-# needed only for setup
-def generate_secret_key(key_size=nacl.secret.SecretBox.KEY_SIZE):
-    """
-    returns a base64 encoded string of raw bytes
-    """
-
-    try:
-        key = urlsafe_b64encode(nacl.utils.random(key_size)).decode()
-        return key
-    except:
-        raise
-
 def create_secret_box(key):
     try:
         box = nacl.secret.SecretBox(key, encoder=URLSafeBase64Encoder)
