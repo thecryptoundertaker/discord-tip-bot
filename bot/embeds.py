@@ -8,18 +8,16 @@ import discord
 @logger.catch
 def help():
     embed = discord.Embed(title="Help", color=0x117de1)
-    embed.description = '''Charon is a bot that allows you to tip other \
-Discord users in many different tokens. See `$tokens` for a list of all \
+    embed.description = '''Plutus will take your money through the underworld \
+and deliver it to any Discord user you want. See `$tokens` for a list of all \
 supported tokens.'''
-    embed.add_field(name="How to use Charon",
+    embed.add_field(name="How to use Plutus",
                     value='''It's as simple as\n`$tip @user <amount> <token>`
 For example:\n`$tip @hades 1 tomb`\n''', inline=False)
     embed.add_field(name="Commands",
                     value='''Here is a list of all the commands available:
 ```$balance\n$deposit\n$tip\n$tokens\n$withdraw```\n''', inline=False)
-    embed.set_thumbnail(url=("https://www.emp-online.es/dw/image/v2/BBQV_PRD"
-                             "/on/demandware.static/-/Sites-master-emp/default/"
-                             "dwd6c21498/images/3/8/6/3/386335a.jpg?sfrm=png"))
+    embed.set_thumbnail(url=("https://cdn.discordapp.com/attachments/864163706970570762/871147388708999308/image0.png"))
     embed.set_footer(text='''For help with a specific command run `$help \
 <command>`''')
 
