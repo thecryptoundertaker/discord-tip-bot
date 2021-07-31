@@ -27,4 +27,5 @@ AUTHORS
 ChangeLog
 config.yml
 *.db
-local/
+local/default.env
+local/secrets.env
