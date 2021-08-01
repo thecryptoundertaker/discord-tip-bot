@@ -14,18 +14,17 @@ from decimal import Decimal
 @logger.catch
 def run_discord_bot(discord_token, conn, w3):
     command_prefix = "$"
-    description = "Charon, the Discord tipping bot."
+    description = "Plutus, the Discord tipping bot."
     bot = commands.Bot(command_prefix=command_prefix,
                     description=description,
                     help_command=None)
 
-    def to_lower(arg):
-        return arg.lower()
-
-    @bot.command()
-    async def ping(ctx):
-        """Check if bot is online."""
-        await ctx.send("pong")
+    # temporary, should be removed for prod
+    @bot.check
+    async def restrict_channel(ctx):
+        if isinstance(ctx.channel, discord.DMChannel):
+            return True
+        return ctx.channel.name == "testing-tips-bot"
 
     ###
     # Help commands
