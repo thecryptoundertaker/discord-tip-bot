@@ -19,13 +19,6 @@ def run_discord_bot(discord_token, conn, w3):
                     description=description,
                     help_command=None)
 
-    # temporary, should be removed for prod
-    @bot.check
-    async def restrict_channel(ctx):
-        if isinstance(ctx.channel, discord.DMChannel):
-            return True
-        return ctx.channel.name == "testing-tips-bot"
-
     ###
     # Help commands
     ###
