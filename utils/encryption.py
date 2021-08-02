@@ -4,6 +4,7 @@ from nacl.encoding import URLSafeBase64Encoder
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 from config import config
 
+@logger.catch(level="CRITICAL")
 def create_secret_box(key):
     try:
         box = nacl.secret.SecretBox(key, encoder=URLSafeBase64Encoder)
@@ -11,6 +12,7 @@ def create_secret_box(key):
     except:
         raise
 
+@logger.catch(level="CRITICAL")
 def encrypt_data(data, box=None):
     try:
         if isinstance(data, str):
@@ -23,6 +25,7 @@ def encrypt_data(data, box=None):
         raise
 
 
+@logger.catch(level="CRITICAL")
 def decrypt_data(data, box=None):
     try:
         if not box:
