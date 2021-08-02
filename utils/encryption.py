@@ -1,3 +1,4 @@
+from loguru import logger
 import nacl.secret
 import nacl.utils
 from nacl.encoding import URLSafeBase64Encoder
