@@ -17,5 +17,5 @@ def backup_periodically(db_file, interval=86400):
     logger.info("Periodic backup started. Backing {} every {} seconds.",
                 db_file, interval)
     while 1:
-        backup(db_file)
         time.sleep(interval)
+        backup(db_file)
