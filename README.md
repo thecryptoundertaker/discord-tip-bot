@@ -9,7 +9,7 @@
 3. Build the docker image
 
 ```bash
-docker build --tag plutus .
+docker build --tag plutus-key .
 ```
 
 5. Generate a new secret key (needed for step 6). **IMPORTANT: DON'T SHARE THIS
@@ -18,7 +18,7 @@ docker build --tag plutus .
     1. Create a container and get inside of it
 
     ```bash
-    docker run -it plutus /bin/bash
+    docker run -it plutus-key /bin/bash
     ```
 
     2. Generate secret key
@@ -38,10 +38,16 @@ docker build --tag plutus .
 6. On the folder `local` create the files `default.env` and `secrets.env` and
 fill in the missing variables following the example files.
 
+7. Recreate a docker image with env variables all set
+
+```bash
+docker build --tag plutus-main .
+```
+
 7. Run the container with the env variables all set
 
 ```bash
-docker run -it -d plutus pipenv run python3 main.py
+docker run -it -d plutus-main pipenv run python3 main.py
 ```
 
 ## Setup (without Docker)
