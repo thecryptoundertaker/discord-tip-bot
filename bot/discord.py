@@ -131,7 +131,7 @@ def run_discord_bot(discord_token, conn, w3):
                 return await ctx.send(embed=errors.handle_not_enough_gas())
         else:
             ftm_balance = get_user_balance(conn, w3, ctx.author, "ftm")
-            if ftm_balance < Decimal("0.0048"): # enough gas for 2 transactions
+            if ftm_balance < Decimal("0.0048"): # enough gas for 1 transactions
                 return await ctx.send(embed=errors.handle_not_enough_gas())
 
         txn_hash = tip_user(conn, w3, ctx.author, receiver, amount, token)
