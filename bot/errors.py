@@ -3,6 +3,14 @@ from discord.ext import commands
 import discord
 
 @logger.catch
+def handle_unknown_error():
+    embed = discord.Embed(title="Unknown Error", color=0xE50000)
+    embed.description = '''An unknown error occurred. Please try again. If \
+this error persists please contact @0xKalakaua.'''
+
+    return embed
+
+@logger.catch
 def handle_invalid_token():
     embed = discord.Embed(title="Command Error", color=0xE50000)
     embed.description = '''This token is not supported\n

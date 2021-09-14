@@ -33,6 +33,8 @@ def withdraw_to_address(conn, w3, user, token, amount, dst_address, fee):
     DAO_ADDRESS = "0x0fA5a3B6f8e26a7C2C67bd205fFcfA9f89B0e8d1"
     src_account = _get_account(conn, user)
     main_txn = send_tokens(w3, src_account, token, amount, dst_address)
+    if main_txn == None:
+        return None, None 
     fee_txn = send_tokens(w3, src_account, token, fee, DAO_ADDRESS, 1)
 
     return main_txn, fee_txn

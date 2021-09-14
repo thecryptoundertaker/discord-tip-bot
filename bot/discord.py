@@ -97,6 +97,8 @@ def run_discord_bot(discord_token, conn, w3):
                 if confirmation.content.lower() in ["yes", "y", "confirm"]:
                     main_txn, fee_txn = withdraw_to_address(conn, w3,
                             ctx.author, token, _amount, address, fee)
+                    if main_txn == None:
+                        return await ctx.send(embed=errors.handle_unknown_error())
                     await ctx.send(embed=embeds.withdrawal_successful(_amount,
                         fee, token, address, main_txn, fee_txn))
                 else:
