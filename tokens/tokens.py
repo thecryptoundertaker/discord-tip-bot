@@ -50,10 +50,19 @@ tshare = frozendict({
     "decimals": 18
     })
 
+bobs = frozendict({
+    "contract_address": "0x76E0C9e6f98b27F11fF3735388F982AEd1de72C9",
+    "type": "ERC20",
+    "symbol": "BOBS",
+    "name": "Bobs",
+    "decimals": 18
+    })
+
 tokens = {
         "ftm": ftm,
         "usdc": usdc,
         "tbond": tbond,
         "tomb": tomb,
-        "tshare": tshare
+        "tshare": tshare,
+        "bobs": bobs
         }
