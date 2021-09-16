@@ -6,7 +6,7 @@ import discord
 def handle_unknown_error():
     embed = discord.Embed(title="Unknown Error", color=0xE50000)
     embed.description = '''An unknown error occurred. Please try again. If \
-this error persists please contact @0xKalakaua.'''
+this error persists please contact **@0xKalakaua**.'''
 
     return embed
 
@@ -52,10 +52,11 @@ some using the `$deposit` command.'''
     return embed
 
 @logger.catch
-def handle_not_enough_gas():
+def handle_not_enough_gas(min_gas):
     embed = discord.Embed(title="Not enough gas", color=0xE50000)
     embed.description = f'''You don't have enough **FTM** to cover gas fees. \
-Please deposit some using the `$deposit` command.'''
+You need at least {min_gas} FTM. Please deposit some using the \
+`$deposit` command.'''
 
     return embed
 

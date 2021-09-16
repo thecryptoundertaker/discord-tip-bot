@@ -2,6 +2,7 @@ from loguru import logger
 from utils.fantom import create_account, send_tokens, get_address_balance
 from utils.encryption import encrypt_data
 from database.database import get_account_from_db, insert_account
+from config import config
 
 @logger.catch
 def _get_account(conn, user):
@@ -30,11 +31,11 @@ def get_user_balance(conn, w3, user, token):
 @logger.catch
 def withdraw_to_address(conn, w3, user, token, amount, dst_address, fee):
     """Withdraw <amount> <token> to <address>"""
-    DAO_ADDRESS = "0x0fA5a3B6f8e26a7C2C67bd205fFcfA9f89B0e8d1"
+    DAO_ADDRESS = config["DAO_ADDRESS"]
     src_account = _get_account(conn, user)
     main_txn = send_tokens(w3, src_account, token, amount, dst_address)
     if main_txn == None:
-        return None, None 
+        return None, None
     fee_txn = send_tokens(w3, src_account, token, fee, DAO_ADDRESS, 1)
 
     return main_txn, fee_txn
@@ -44,4 +45,7 @@ def tip_user(conn, w3, sender, receiver, amount, token):
     """Send <amount> <token> from <sender> to <receiver>"""
     src_account = _get_account(conn, sender)
     dst_address = get_address(conn, receiver)
-    return send_tokens(w3, src_account, token, amount, dst_address)
+    txn_hash = send_tokens(w3, src_account, token, amount, dst_address)
+    if not txn_hash:
+        return None
+    return txn_hash

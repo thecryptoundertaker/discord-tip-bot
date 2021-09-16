@@ -6,10 +6,11 @@ from discord.ext import commands
 from utils.users import (get_address, get_user_balance, withdraw_to_address,
         tip_user)
 from tokens.tokens import tokens
-from utils.utils import round_down, to_lower
+from utils.utils import round_down, to_lower, get_min_gas
 from bot import errors, embeds
 from bot.help import help_commands
 from decimal import Decimal
+from config import config
 
 @logger.catch
 def run_discord_bot(discord_token, conn, w3):
@@ -57,8 +58,9 @@ def run_discord_bot(discord_token, conn, w3):
             return await ctx.send(embed=errors.handle_no_funds(token))
 
         ftm_balance = get_user_balance(conn, w3, ctx.author, "ftm")
-        if ftm_balance < Decimal("0.0096"): # enough gas for 2 transactions
-            return await ctx.send(embed=errors.handle_not_enough_gas())
+        min_gas = get_min_gas(w3)
+        if ftm_balance < min_gas * 2: # enough gas for 2 transactions
+            return await ctx.send(embed=errors.handle_not_enough_gas(min_gas*2))
 
         def is_valid(msg):
             return msg.channel == ctx.channel and msg.author == ctx.author
@@ -78,19 +80,22 @@ def run_discord_bot(discord_token, conn, w3):
                 return await ctx.send(embed=embeds.withdrawal_cancelled())
             if amount.content.lower() == "all":
                 _amount = Decimal(balance)
-                if token == "ftm":
-                    _amount -= Decimal("0.0096") # To cover for gas fees
             else:
                 try:
                     _amount = Decimal(amount.content)
                 except:
                     return await ctx.send(embed=errors.handle_invalid_amount())
 
-            fee = round_down(_amount * Decimal("0.02"), 6)  # set withdrawal fee to 2%
+            if token == "ftm":
+                _amount -= min_gas * 2 # To cover for gas fees
+            fee = round_down(_amount * Decimal(config["FEE"]), 6)
             _amount -= fee
             if _amount < Decimal("1e-6"):
                 return await ctx.send(embed=errors.handle_withdrawal_too_small())
-            if 0 < _amount <= balance:
+            total = _amount + fee
+            if token == "ftm":
+                total += min_gas * 2
+            if 0 < total <= balance:
                 await ctx.send(embed=embeds.withdrawal_ok_prompt(_amount, token,
                             address, fee))
                 confirmation = await bot.wait_for("message", check=is_valid)
@@ -127,16 +132,19 @@ def run_discord_bot(discord_token, conn, w3):
         if amount > balance:
             return await ctx.send(embed=errors.handle_insufficient_balance(
                 amount, token, balance))
+        min_gas = get_min_gas(w3)
 
         if token == "ftm":
-            if amount + Decimal("0.0048") > balance:
-                return await ctx.send(embed=errors.handle_not_enough_gas())
+            if amount + min_gas > balance:
+                return await ctx.send(embed=errors.handle_not_enough_gas(min_gas))
         else:
             ftm_balance = get_user_balance(conn, w3, ctx.author, "ftm")
-            if ftm_balance < Decimal("0.0048"): # enough gas for 1 transactions
-                return await ctx.send(embed=errors.handle_not_enough_gas())
+            if ftm_balance < min_gas:
+                return await ctx.send(embed=errors.handle_not_enough_gas(min_gas))
 
         txn_hash = tip_user(conn, w3, ctx.author, receiver, amount, token)
+        if not txn_hash:
+            return await ctx.send(embed=errors.handle_unknown_error())
         await ctx.send(embed=embeds.tip_succesful(ctx.author, receiver, amount,
             token, txn_hash))
 

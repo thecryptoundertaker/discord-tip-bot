@@ -5,6 +5,7 @@ from secrets import randbits
 from tokens.tokens import tokens, get_token_abi
 from utils.utils import to_decimal, from_decimal
 from decimal import Decimal
+from config import config
 
 ###
 # Node utils
@@ -52,8 +53,8 @@ def send_tokens(w3, src_account, token, amount, dst_address, pending_txs=0):
     amount = to_decimal(amount, tokens[token]['decimals'])
     txn_details = {
             "chainId": 250,
-            "gas": 80000,
-            "gasPrice": w3.toWei(60, "gwei"),
+            "gas": int(config["GAS_LIMIT"]),
+            "gasPrice": w3.toWei(Decimal(config["GAS_PRICE"]), "gwei"),
             "nonce": nonce
             }
     if token.lower() == "ftm":
@@ -68,6 +69,8 @@ def send_tokens(w3, src_account, token, amount, dst_address, pending_txs=0):
         txn = contract_func.buildTransaction(txn_details)
         signed_txn = _sign_transaction(txn, src_account)
     txn_hash = _send_raw_transaction(w3, signed_txn)
+    if not txn_hash:
+        return None
     return txn_hash.hex()
 
 @logger.catch
