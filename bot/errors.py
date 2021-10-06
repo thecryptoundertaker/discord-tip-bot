@@ -2,6 +2,15 @@ from loguru import logger
 from discord.ext import commands
 import discord
 
+
+@logger.catch
+def handle_not_admin():
+    embed = discord.Embed(title="Command Error", color=0xE50000)
+    embed.description = '''Only admins can run this command. Please contact \
+**@0xKalakaua**.'''
+
+    return embed
+
 @logger.catch
 def handle_unknown_error():
     embed = discord.Embed(title="Unknown Error", color=0xE50000)

@@ -27,8 +27,21 @@ def run_discord_bot(discord_token, conn, w3):
     help_commands(bot)
 
     ###
+    # Checks
+    ###
+
+    def is_admin(ctx):
+        return ctx.message.author.id == 687754112866975841
+
+    ###
     # Tip bot commands
     ###
+
+    @bot.command()
+    @commands.check(is_admin)
+    async def gas(ctx, gas_price: int):
+        config["GAS_PRICE"] = gas_price
+        await ctx.send(embed=embeds.set_gas(gas_price))
 
     @bot.command(name="tokens")
     async def _tokens(ctx):
@@ -151,6 +164,11 @@ def run_discord_bot(discord_token, conn, w3):
     ###
     # Command Errors
     ###
+
+    @gas.error
+    async def deposit_error(ctx, error):
+        logger.error("{}: {}", type(error).__name__, error)
+        await ctx.send(embed=errors.handle_not_admin())
 
     @deposit.error
     async def deposit_error(ctx, error):

@@ -203,3 +203,13 @@ def tip_succesful(sender, receiver, amount, token, txn_hash):
 be reflected on the blockchain.''')
 
     return embed
+
+###
+# gas
+###
+
+@logger.catch
+def set_gas(gas_price):
+    embed = discord.Embed(title="Gas", color=0x117de1)
+    embed.description = f"Gas Price set to **{gas_price}** gwei"
+    return embed
