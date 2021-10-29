@@ -13,9 +13,11 @@ from config import config
 
 @logger.catch
 def connect_to_fantom(provider_address, provider_type="wss", timeout=60):
-    if provider_type == "wss" or "ws":
+    if provider_type in ["wss", "ws"]:
         w3 = Web3(Web3.WebsocketProvider(provider_address,
                     websocket_timeout=timeout))
+    elif provider_type == "http":
+        w3 = Web3(Web3.HTTPProvider(provider_address))
     else:
         raise Exception
     if w3.isConnected():

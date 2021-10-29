@@ -16,7 +16,7 @@ def main():
                                         args=(config["DATABASE_FILE"],
                                               int(config["DB_BACKUP_INTERVAL"])))
     backup_db_thread.start()
-    w3 = connect_to_fantom(config["PROVIDER_ADDRESS"])
+    w3 = connect_to_fantom(config["PROVIDER_ADDRESS"], config["PROVIDER_TYPE"])
     bot = run_discord_bot(config["DISCORD_TOKEN"], conn, w3)
 
 if __name__ == "__main__":
