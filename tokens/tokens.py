@@ -58,11 +58,29 @@ bobs = frozendict({
     "decimals": 18
     })
 
+scarab = frozendict({
+    "contract_address": "0x2e79205648B85485731CFE3025d66cF2d3B059c4",
+    "type": "ERC20",
+    "symbol": "SCARAB",
+    "name": "Scarab",
+    "decimals": 18
+    })
+
+gscarab = frozendict({
+    "contract_address": "0x6ab5660f0B1f174CFA84e9977c15645e4848F5D6",
+    "type": "ERC20",
+    "symbol": "GSCARAB",
+    "name": "Gscarab",
+    "decimals": 18
+    })
+
 tokens = {
         "ftm": ftm,
         "usdc": usdc,
         "tbond": tbond,
         "tomb": tomb,
         "tshare": tshare,
+        "scarab": scarab,
+        "gscarab": gscarab,
         "bobs": bobs
         }
